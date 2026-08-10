@@ -1,0 +1,2923 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light" />
+<meta name="theme-color" content="#F5F1E8" />
+<title>Hood Powl — See what matters</title>
+<meta name="description" content="Intelligence discovery on Robinhood Chain. Read-only, evidence first." />
+<style>
+
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300&display=swap');
+
+/* ══════════════════════════════════════════════════════════════════════
+   DESIGN TOKENS — warm cream editorial system
+   ══════════════════════════════════════════════════════════════════════ */
+:root{
+  /* surfaces */
+  --paper:#F5F1E8;
+  --surface:#EEE9DE;
+  --sink:#E8E2D4;
+  /* ink */
+  --ink:#171A17;
+  --ink-soft:#3D3F38;
+  --muted:#6F6B62;
+  --faint:#948E82;
+  /* structure */
+  --line:#D8D1C4;
+  --line-soft:#E4DED1;
+  /* restrained accents */
+  --accent:#4B4535;
+  --moss:#5A6B4F;
+  --clay:#8A6540;
+  /* radius */
+  --r:2px;
+  --r-md:4px;
+  /* elevation */
+  --sh:0 1px 1px rgba(23,26,23,.02);
+  --sh-2:0 14px 34px -22px rgba(23,26,23,.22);
+  /* type */
+  --sans:'Inter Tight',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --serif:'Instrument Serif','Newsreader',Georgia,serif;
+  --edit:'Newsreader',Georgia,serif;
+  /* metrics */
+  --maxw:1280px;
+  --gut:56px;
+  --head:74px;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0}
+
+.hp{background:var(--paper);color:var(--ink);min-height:100vh;overflow-x:hidden;
+  font-family:var(--sans);font-weight:400;-webkit-font-smoothing:antialiased;
+  font-feature-settings:"tnum" 1;letter-spacing:-.005em}
+/* element-level resets, kept at low specificity so the component classes
+   further down own their own padding, border and colour */
+button{font:inherit;color:inherit;background:none;border:none;padding:0;cursor:pointer;text-align:left}
+input{font:inherit;color:inherit;background:none;border:none;outline:none}
+/* low specificity on purpose: component classes below must win on colour */
+a{color:inherit}
+.hp a{text-decoration:none}
+.hp :focus-visible{outline:1px solid var(--accent);outline-offset:3px}
+[hidden]{display:none!important}
+
+.hp-wrap{max-width:var(--maxw);margin:0 auto;padding:0 var(--gut)}
+
+/* ── type scale ──────────────────────────────────────────────────────── */
+.hp-label{font-size:9.5px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted)}
+.hp-d1{font-family:var(--serif);font-weight:400;font-size:clamp(52px,7.4vw,104px);line-height:.9;
+  letter-spacing:-.025em;margin:0;text-transform:uppercase}
+.hp-d2{font-family:var(--serif);font-weight:400;font-size:clamp(30px,3.4vw,44px);line-height:1;
+  letter-spacing:-.02em;margin:0}
+.hp-d3{font-family:var(--serif);font-weight:400;font-size:clamp(22px,2vw,27px);line-height:1.14;
+  letter-spacing:-.015em;margin:0}
+.hp-edit{font-family:var(--edit);font-style:italic;font-weight:300;font-size:clamp(15px,1.5vw,18px);
+  color:var(--muted);margin:0;letter-spacing:0}
+.hp-body{font-size:14.5px;line-height:1.62;color:var(--muted);font-weight:400;margin:0}
+.hp-mono{font-variant-numeric:tabular-nums;letter-spacing:.01em}
+.hp-num{font-variant-numeric:tabular-nums;font-weight:400}
+
+/* ── status line ─────────────────────────────────────────────────────── */
+.hp-status{border-bottom:1px solid var(--line-soft);background:var(--paper)}
+.hp-status-in{display:flex;align-items:center;gap:20px;height:32px;font-size:9.5px;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--faint);white-space:nowrap;overflow:hidden}
+.hp-status b{font-weight:400;color:var(--ink-soft);letter-spacing:.14em}
+.hp-status .sp{margin-left:auto;display:flex;align-items:center;gap:20px}
+.hp-status .src{text-transform:none;letter-spacing:.04em;font-size:10px;color:var(--faint)}
+.hp-state{display:inline-flex;align-items:center;gap:8px;color:var(--ink-soft)}
+
+.hp-dot{width:5px;height:5px;border-radius:50%;display:inline-block;flex:none;position:relative;
+  background:var(--faint)}
+.hp-dot.live{background:var(--moss)}
+.hp-dot.live::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:1px solid var(--moss);
+  opacity:.35;animation:ping 3.4s ease-out infinite}
+@keyframes ping{0%{transform:scale(.5);opacity:.35}100%{transform:scale(1.5);opacity:0}}
+.hp-dot.watch{background:var(--clay)}
+.hp-dot.quiet{background:var(--faint)}
+
+/* ── header ──────────────────────────────────────────────────────────── */
+.hp-head{position:sticky;top:0;z-index:40;background:rgba(245,241,232,.88);
+  backdrop-filter:saturate(140%) blur(14px);border-bottom:1px solid var(--line)}
+.hp-head-in{display:flex;align-items:center;height:var(--head);gap:24px}
+
+.hp-mark{display:inline-flex;align-items:center;gap:12px}
+.hp-bear{display:flex;align-items:flex-end;gap:2.5px;height:18px}
+.hp-bear i{width:2px;background:var(--line);display:block;transition:background .7s ease}
+.hp-bear i.on{background:var(--accent)}
+.hp-word{line-height:1;display:block}
+.hp-word .b{display:block;font-size:14.5px;letter-spacing:.2em;font-weight:500;text-transform:uppercase}
+.hp-word .a{display:block;font-size:8.5px;letter-spacing:.3em;color:var(--faint);
+  text-transform:uppercase;margin-top:5px}
+
+.hp-center{position:absolute;left:50%;transform:translateX(-50%)}
+.hp-link{display:inline-flex;align-items:center;gap:9px;font-size:10.5px;letter-spacing:.26em;
+  text-transform:uppercase;color:var(--muted);padding:7px 0;border-bottom:1px solid transparent;
+  transition:color .25s,border-color .25s}
+.hp-link:hover{color:var(--ink)}
+.hp-link.on{color:var(--ink);border-bottom-color:var(--accent)}
+
+.hp-tools{margin-left:auto;display:flex;align-items:center;gap:6px}
+.hp-tool{display:inline-flex;align-items:center;gap:10px;height:36px;padding:0 12px;
+  font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);
+  border:1px solid transparent;border-radius:var(--r);transition:color .25s,border-color .25s,background .25s}
+.hp-tool:hover{color:var(--ink);border-color:var(--line);background:var(--surface)}
+.hp-kbd{font-size:9px;letter-spacing:.06em;color:var(--faint);border:1px solid var(--line);
+  border-radius:var(--r);padding:2px 5px;text-transform:none}
+.hp-icon{width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;
+  color:var(--muted);border:1px solid transparent;border-radius:var(--r);
+  transition:color .25s,border-color .25s,background .25s}
+.hp-icon:hover,.hp-icon.on{color:var(--ink);border-color:var(--line);background:var(--surface)}
+
+.hp-menu-wrap{position:relative}
+.hp-menu{position:absolute;top:calc(100% + 10px);right:0;min-width:196px;background:var(--paper);
+  border:1px solid var(--line);border-radius:var(--r-md);box-shadow:var(--sh-2);padding:6px;
+  z-index:50;animation:pop .22s cubic-bezier(.2,.7,.3,1)}
+@keyframes pop{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+.hp-menu a{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 13px;
+  font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted);
+  border-radius:var(--r);transition:background .2s,color .2s}
+.hp-menu a:hover{background:var(--surface);color:var(--ink)}
+.hp-menu a.on{color:var(--ink)}
+.hp-menu a.on .d{color:var(--accent)}
+.hp-menu a .d{font-family:var(--edit);font-style:italic;font-size:12px;letter-spacing:0;
+  text-transform:none;color:var(--faint)}
+.hp-menu-rule{height:1px;background:var(--line-soft);margin:5px 13px}
+
+.hp-mob{display:none}
+
+/* ── mobile sheet ────────────────────────────────────────────────────── */
+.hp-sheet{position:fixed;inset:0;z-index:60;background:var(--paper);display:flex;flex-direction:column;
+  animation:fade .22s ease-out}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.hp-sheet-h{display:flex;align-items:center;height:64px;padding:0 22px;border-bottom:1px solid var(--line)}
+.hp-sheet-x{margin-left:auto;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+.hp-sheet-s{margin:24px 22px 4px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);
+  padding:15px 16px;display:flex;align-items:center;gap:11px;font-size:13px;color:var(--muted);width:calc(100% - 44px)}
+.hp-sheet-l{padding:10px 22px 0}
+.hp-sheet-i{display:flex;align-items:baseline;gap:14px;width:100%;padding:24px 0;
+  border-bottom:1px solid var(--line-soft)}
+.hp-sheet-i .n{font-size:9px;letter-spacing:.2em;color:var(--faint);min-width:20px}
+.hp-sheet-i .t{font-family:var(--serif);font-size:30px;letter-spacing:-.02em;color:var(--muted)}
+.hp-sheet-i.on .t{color:var(--ink)}
+
+/* ── sections ────────────────────────────────────────────────────────── */
+.hp-sec{padding:96px 0 100px;border-top:1px solid var(--line)}
+.hp-sec-head{display:flex;align-items:flex-end;justify-content:space-between;gap:36px;margin-bottom:52px}
+.hp-sec-head .hp-d2{margin-bottom:12px}
+.hp-act{display:inline-flex;align-items:center;gap:10px;font-size:10px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line);padding-bottom:6px;
+  transition:color .25s,border-color .25s,gap .25s}
+.hp-act:hover{color:var(--ink);border-color:var(--accent);gap:15px}
+
+/* ── hero ────────────────────────────────────────────────────────────── */
+.hp-hero{padding:96px 0 78px}
+.hp-hero-in{display:grid;grid-template-columns:1.02fr .98fr;gap:64px;align-items:center}
+.hp-hero-copy > * + *{margin-top:26px}
+.hp-hero-copy .hp-d1{margin-top:22px}
+.hp-sup{font-size:12px;letter-spacing:.26em;text-transform:uppercase;color:var(--muted);line-height:1.9;margin:0}
+.hp-sup b{display:block;color:var(--ink);font-weight:400}
+.hp-cta-row{display:flex;align-items:center;gap:28px;flex-wrap:wrap;margin-top:42px!important}
+.hp-cta{display:inline-flex;align-items:center;gap:13px;font-size:11px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--paper);background:var(--ink);border:1px solid var(--ink);
+  border-radius:var(--r);padding:15px 22px;transition:gap .3s,background .25s}
+.hp-cta:hover{gap:19px;background:var(--accent);border-color:var(--accent)}
+.hp-cta2{display:inline-flex;align-items:center;gap:10px;font-size:10.5px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line);padding-bottom:6px;
+  transition:color .25s,border-color .25s}
+.hp-cta2:hover{color:var(--ink);border-color:var(--accent)}
+
+/* ── network map (information map, not a chart) ──────────────────────── */
+.hp-map{width:100%;height:auto;display:block;overflow:visible}
+.hp-map .r{fill:none;stroke:var(--line)}
+.hp-map .rf{fill:var(--surface);stroke:var(--line)}
+.hp-map .ln{stroke:var(--line);stroke-width:1;fill:none}
+.hp-map .nd{fill:var(--paper);stroke:var(--line)}
+.hp-map .nd-f{fill:var(--accent);stroke:none}
+.hp-map .lb{fill:var(--muted);font-family:var(--sans);font-size:8px;letter-spacing:2.1px;
+  text-transform:uppercase}
+.hp-map .vl{fill:var(--ink);font-family:var(--serif);font-size:23px;letter-spacing:-.4px}
+.hp-map .drift{animation:drift 16s ease-in-out infinite}
+.hp-map .drift-2{animation:drift 21s ease-in-out infinite reverse}
+@keyframes drift{0%,100%{transform:translate(0,0)}50%{transform:translate(0,-6px)}}
+.hp-map .blink{animation:blink 5.5s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:.25}50%{opacity:.85}}
+
+/* ── figure row ──────────────────────────────────────────────────────── */
+.hp-figs{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);margin-top:76px}
+.hp-fig{padding:24px 30px 4px;border-left:1px solid var(--line-soft)}
+.hp-fig:first-child{padding-left:0;border-left:none}
+.hp-fig .l{display:block;font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--faint);
+  margin-bottom:14px}
+.hp-fig .v{font-family:var(--serif);font-size:30px;letter-spacing:-.02em;line-height:1;
+  font-variant-numeric:tabular-nums;display:block}
+.hp-fig .n{display:block;font-size:11px;color:var(--faint);margin-top:11px;letter-spacing:.01em;line-height:1.5}
+.hp-note{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);
+  margin:26px 0 0;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.hp-note::before{content:"";width:24px;height:1px;background:var(--line);flex:none}
+.hp-retry{font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink);
+  border:1px solid var(--line);border-radius:var(--r);padding:6px 11px;transition:border-color .25s}
+.hp-retry:hover{border-color:var(--accent)}
+
+/* ── method strip ────────────────────────────────────────────────────── */
+.hp-method{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line-soft);
+  margin-bottom:56px}
+.hp-step{padding:18px 26px 0;border-left:1px solid var(--line-soft);position:relative}
+.hp-step:first-child{padding-left:0;border-left:none}
+.hp-step-l{display:flex;align-items:center;gap:9px;font-size:9.5px;letter-spacing:.24em;
+  text-transform:uppercase;color:var(--ink-soft)}
+.hp-step-l i{width:4px;height:4px;border-radius:50%;background:var(--line);flex:none}
+.hp-step:first-child .hp-step-l i{background:var(--accent)}
+.hp-step-c{display:block;font-size:12px;color:var(--faint);margin-top:9px;max-width:24ch;line-height:1.5}
+
+/* ── home: method cta ───────────────────────────────────────────────── */
+.hp-method-cta{display:flex;align-items:center;gap:28px;flex-wrap:wrap;margin-top:52px}
+.hp-method-cta .hp-edit{margin:0}
+
+/* ── discover: page head + live status ──────────────────────────────── */
+.hp-disc-head{padding:72px 0 44px;max-width:760px}
+.hp-disc-head .hp-label{display:block;margin-bottom:22px}
+.hp-disc-head .hp-edit{margin-top:20px;font-size:clamp(16px,1.7vw,20px)}
+
+.hp-live{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);
+  border-radius:var(--r-md);background:var(--surface);overflow:hidden}
+.hp-live-c{padding:22px 26px 24px;border-left:1px solid var(--line)}
+.hp-live-c:first-child{border-left:none}
+.hp-live-c .l{display:block;font-size:9px;letter-spacing:.26em;text-transform:uppercase;
+  color:var(--faint);margin-bottom:14px}
+.hp-live-c .v{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-size:27px;
+  line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.hp-live-c .n{display:block;font-size:11px;color:var(--faint);margin-top:11px;line-height:1.5}
+
+/* ── discover: feed bar (search stays secondary to the feed) ────────── */
+.hp-sec-feed{border-top:none;padding:56px 0 100px}
+/* a section that opens its own view: no rule stranded under the header */
+.hp-sec-top{border-top:none;padding-top:78px}
+.hp-feed-bar{display:flex;align-items:flex-end;justify-content:space-between;gap:28px;
+  flex-wrap:wrap;margin-bottom:26px}
+.hp-feed-tools{display:flex;align-items:center;gap:20px}
+.hp-find-sm{height:40px;max-width:290px;min-width:0;padding:0 13px;gap:10px}
+.hp-find-sm input{font-size:12.5px}
+.hp-feed-meta{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;
+  flex-wrap:wrap;margin-bottom:30px}
+.hp-feed-meta .hp-cats{margin:0}
+.hp-feed-meta .hp-now{margin:0}
+
+/* ── discover controls ───────────────────────────────────────────────── */
+.hp-find{display:flex;align-items:center;gap:13px;border:1px solid var(--line);border-radius:var(--r);
+  background:var(--surface);padding:0 16px;height:52px;max-width:560px;transition:border-color .25s,background .25s}
+.hp-find:focus-within{border-color:var(--accent);background:var(--paper)}
+.hp-find svg{color:var(--faint);flex:none}
+/* min-width:0 so the field can shrink inside a flex row instead of
+   pushing its neighbours out of the container */
+.hp-find input{flex:1;min-width:0;font-size:14px;height:100%}
+.hp-find input::placeholder{color:var(--faint)}
+.hp-find .hp-kbd{flex:none}
+
+.hp-cats{display:flex;gap:8px;flex-wrap:wrap;margin:34px 0 8px}
+.hp-cat{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);
+  border:1px solid var(--line);border-radius:var(--r);padding:8px 13px;background:transparent;
+  transition:color .2s,border-color .2s,background .2s}
+.hp-cat:hover{color:var(--ink);border-color:var(--accent)}
+.hp-cat.on{color:var(--paper);background:var(--ink);border-color:var(--ink)}
+.hp-cat.empty{color:var(--faint);border-color:var(--line-soft)}
+.hp-cat.empty.on{color:var(--paper)}
+.hp-cat .ct{color:inherit;opacity:.5;margin-left:7px;font-variant-numeric:tabular-nums}
+
+.hp-now{display:flex;align-items:baseline;gap:14px;margin:40px 0 22px;
+  font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint)}
+.hp-now .hd{display:inline-flex;align-items:center;gap:9px;color:var(--ink-soft)}
+.hp-now .rg{margin-left:auto;text-align:right}
+
+/* ── INTELLIGENCE CARD ───────────────────────────────────────────────── */
+.hp-feed{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.hp-card{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);
+  padding:28px 30px 26px;display:flex;flex-direction:column;box-shadow:var(--sh);
+  transition:border-color .3s,box-shadow .35s,transform .35s,background .3s}
+.hp-card:hover{border-color:#C9C0AE;box-shadow:var(--sh-2);transform:translateY(-2px)}
+.hp-card.lead{grid-column:1/-1;background:var(--paper);padding:38px 40px 34px}
+.hp-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:26px}
+.hp-tag{font-size:9px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);
+  display:inline-flex;align-items:center;gap:8px}
+.hp-tag::before{content:"";width:14px;height:1px;background:var(--line)}
+.hp-card.lead .hp-tag{color:var(--accent)}
+.hp-glyph{color:var(--line);flex:none;transition:color .3s}
+.hp-card:hover .hp-glyph{color:#BFB6A2}
+.hp-card-h{font-family:var(--serif);font-weight:400;font-size:26px;line-height:1.1;letter-spacing:-.018em;
+  margin:0 0 14px;max-width:26ch}
+.hp-card.lead .hp-card-h{font-size:clamp(30px,3.1vw,40px);max-width:24ch;margin-bottom:18px}
+.hp-card-p{font-size:14px;line-height:1.62;color:var(--muted);margin:0;max-width:52ch}
+.hp-card.lead .hp-card-p{font-size:15.5px;max-width:56ch}
+
+/* a two-up grid in the narrower cards: four figures in one flex row would wrap
+   and leave a divider dangling. The lead card has the width for a single row. */
+.hp-ev{list-style:none;display:grid;grid-template-columns:repeat(2,1fr);gap:20px 26px;
+  margin:26px 0 0;padding:20px 0 0;border-top:1px solid var(--line-soft)}
+.hp-ev li{padding-right:0;margin-right:0}
+.hp-card.lead .hp-ev{display:flex;flex-wrap:wrap;gap:0}
+.hp-card.lead .hp-ev li{padding-right:30px;margin-right:30px;border-right:1px solid var(--line-soft)}
+.hp-card.lead .hp-ev li:last-child{border-right:none;margin-right:0;padding-right:0}
+.hp-ev .v{display:block;font-size:19px;letter-spacing:-.01em;font-variant-numeric:tabular-nums;
+  color:var(--ink);line-height:1}
+.hp-ev .l{display:block;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);
+  margin-top:9px}
+
+.hp-ev-btn{margin-top:24px;display:inline-flex;align-items:center;gap:10px;font-size:10px;
+  letter-spacing:.22em;text-transform:uppercase;color:var(--muted);align-self:flex-start;
+  transition:color .25s,gap .25s}
+.hp-ev-btn:hover{color:var(--ink);gap:15px}
+.hp-ev-btn svg{transition:transform .3s}
+.hp-ev-btn[aria-expanded="true"] svg{transform:rotate(90deg)}
+.hp-ev-panel{margin-top:24px;padding-top:24px;border-top:1px solid var(--line-soft);
+  animation:reveal .4s cubic-bezier(.2,.7,.3,1)}
+@keyframes reveal{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.hp-why{font-size:9px;letter-spacing:.28em;text-transform:uppercase;color:var(--faint);display:block;
+  margin-bottom:12px}
+.hp-ev-panel p{font-size:13.5px;line-height:1.65;color:var(--muted);margin:0 0 20px;max-width:60ch}
+.hp-ev-rows{display:grid;gap:0;margin:0 0 18px}
+.hp-ev-row{display:flex;align-items:baseline;gap:18px;padding:11px 0;border-top:1px solid var(--line-soft);
+  font-size:12.5px}
+.hp-ev-row .k{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);
+  min-width:150px;flex:none}
+.hp-ev-row .v{color:var(--ink-soft);font-variant-numeric:tabular-nums;word-break:break-all}
+
+/* evidence: real objects, each one a live lookup */
+.hp-ev-sub{font-size:9px;letter-spacing:.28em;text-transform:uppercase;color:var(--faint);display:block;
+  margin:26px 0 12px}
+.hp-obj{display:flex;align-items:baseline;gap:18px;width:100%;padding:13px 0;
+  border-top:1px solid var(--line-soft);text-align:left;transition:padding-left .25s,background .25s}
+.hp-obj:hover{padding-left:9px;background:linear-gradient(to right,var(--paper),transparent 60%)}
+.hp-card.lead .hp-obj:hover{background:linear-gradient(to right,var(--surface),transparent 60%)}
+.hp-obj .k{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);
+  min-width:150px;flex:none}
+.hp-obj .v{font-size:12.5px;color:var(--ink-soft);font-variant-numeric:tabular-nums;
+  overflow-wrap:break-word;word-break:break-all;flex:1}
+.hp-obj .go{margin-left:auto;flex:none;color:var(--line);transition:color .25s,transform .25s}
+.hp-obj:hover .go{color:var(--accent);transform:translateX(3px)}
+/* indexed context: same rows as the observation block, with a quiet source mark */
+.hp-bs-src{font-family:var(--edit);font-style:italic;font-size:11px;letter-spacing:0;
+  text-transform:none;color:var(--faint);margin-left:8px}
+.hp-bs-note{font-size:12.5px;line-height:1.6;color:var(--faint);margin:0;max-width:56ch}
+.hp-res-sub .k{color:var(--muted)}
+.hp-dim-t{color:var(--faint)}
+.hp-primary{display:inline-flex;align-items:center;gap:12px;margin-top:22px;font-size:10px;
+  letter-spacing:.22em;text-transform:uppercase;color:var(--paper);background:var(--ink);
+  border:1px solid var(--ink);border-radius:var(--r);padding:13px 19px;
+  transition:gap .3s,background .25s,border-color .25s}
+.hp-primary:hover{gap:18px;background:var(--accent);border-color:var(--accent)}
+.hp-traces{display:flex;flex-wrap:wrap;gap:9px}
+.hp-trace{display:inline-flex;align-items:center;gap:9px;font-size:9.5px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:var(--r);
+  padding:9px 13px;transition:color .25s,border-color .25s,background .25s}
+.hp-trace:hover{color:var(--ink);border-color:var(--accent);background:var(--paper)}
+
+/* ── row index (assets) ──────────────────────────────────────────────── */
+.hp-rows{border-top:1px solid var(--line)}
+.hp-row{display:grid;grid-template-columns:46px 1fr 180px;gap:26px;width:100%;padding:26px 0 28px;
+  border-bottom:1px solid var(--line-soft);align-items:start;transition:padding-left .3s,background .3s}
+.hp-row:hover{padding-left:10px;background:linear-gradient(to right,var(--surface),transparent 70%)}
+.hp-rank{font-size:9.5px;letter-spacing:.14em;color:var(--faint);padding-top:8px;font-variant-numeric:tabular-nums}
+.hp-subj{font-family:var(--serif);font-size:24px;letter-spacing:-.015em;display:flex;align-items:baseline;
+  gap:13px;flex-wrap:wrap}
+.hp-subj .nm{font-family:var(--sans);font-size:12.5px;color:var(--faint);letter-spacing:0}
+.hp-meta{display:flex;gap:22px;flex-wrap:wrap;margin-top:12px;font-size:10px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--faint)}
+.hp-meta b{font-weight:400;color:var(--muted);font-variant-numeric:tabular-nums}
+.hp-fig-r{text-align:right}
+.hp-fig-r .p{font-family:var(--serif);font-size:26px;letter-spacing:-.02em;font-variant-numeric:tabular-nums;
+  display:block;line-height:1}
+.hp-fig-r .c{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);display:block;
+  margin-top:10px}
+
+/* ── record (log) ────────────────────────────────────────────────────── */
+.hp-log{border-top:1px solid var(--line)}
+.hp-sig{display:grid;grid-template-columns:120px 1fr;padding:24px 0 26px;border-bottom:1px solid var(--line-soft);
+  position:relative}
+.hp-sig-gut{position:relative;padding-right:30px}
+.hp-sig-gut::after{content:"";position:absolute;right:0;top:-24px;bottom:-26px;width:1px;background:var(--line-soft)}
+.hp-sig-node{position:absolute;right:-3.5px;top:5px;width:7px;height:7px;border-radius:50%;
+  background:var(--paper);border:1px solid var(--line)}
+.hp-sig.fresh .hp-sig-node{border-color:var(--accent);background:var(--accent)}
+.hp-sig-time{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;letter-spacing:.03em}
+.hp-sig-utc{font-size:8.5px;letter-spacing:.24em;color:var(--faint);display:block;margin-top:5px}
+.hp-sig-body{padding-left:30px}
+.hp-sig-kind{font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--faint);
+  display:flex;align-items:center;gap:9px;margin-bottom:11px}
+.hp-sig.fresh .hp-sig-kind{color:var(--accent)}
+.hp-sig-say{font-size:15px;line-height:1.5;letter-spacing:-.01em;margin:0 0 12px;max-width:64ch;color:var(--ink-soft)}
+.hp-sig-foot{display:flex;align-items:center;gap:24px;flex-wrap:wrap;font-size:11.5px;color:var(--faint);
+  font-variant-numeric:tabular-nums}
+.hp-sig-foot .e{color:var(--muted);letter-spacing:.02em}
+.hp-elink{border-bottom:1px solid transparent;transition:color .2s,border-color .2s}
+.hp-elink:hover{color:var(--ink);border-bottom-color:var(--line)}
+
+/* ── empty / loading states ──────────────────────────────────────────── */
+.hp-empty{padding:60px 0 20px;max-width:46ch}
+.hp-empty h4{font-family:var(--serif);font-size:24px;font-weight:400;letter-spacing:-.015em;margin:0 0 12px}
+.hp-empty p{font-size:14px;color:var(--muted);line-height:1.65;margin:0 0 10px}
+.hp-feed-state{grid-column:1/-1}
+
+/* ── search overlay ──────────────────────────────────────────────────── */
+.hp-ov{position:fixed;inset:0;z-index:80;background:rgba(245,241,232,.96);backdrop-filter:blur(10px);
+  animation:fade .2s ease-out;overflow-y:auto}
+.hp-ov-in{max-width:820px;margin:0 auto;padding:0 32px 64px}
+.hp-ov-bar{display:flex;align-items:center;gap:18px;padding:40px 0 22px;border-bottom:1px solid var(--line)}
+.hp-ov-bar:focus-within{border-bottom-color:var(--accent)}
+.hp-ov-input{flex:1;font-family:var(--serif);font-size:clamp(24px,3.2vw,36px);letter-spacing:-.02em}
+/* the field's own container carries the focus state, so skip the floating ring */
+.hp-ov-input:focus-visible,.hp-find input:focus-visible{outline:none}
+.hp-ov-input::placeholder{color:var(--faint)}
+.hp-res{width:100%;padding:19px 0;border-bottom:1px solid var(--line-soft);display:flex;gap:22px;
+  align-items:baseline;transition:padding-left .25s}
+.hp-res:first-child{border-bottom-color:var(--line)}
+.hp-res .k{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--faint);min-width:130px;flex:none}
+.hp-res .t{font-size:15px;letter-spacing:-.005em;display:block;color:var(--ink);word-break:break-all}
+
+/* ── editorial pages (docs / blog / faq) ─────────────────────────────── */
+.hp-page{padding:78px 0 40px}
+.hp-page-head{max-width:760px;margin-bottom:70px}
+.hp-page-head .hp-label{margin-bottom:22px;display:block}
+.hp-page-head .hp-edit{margin-top:22px;font-size:clamp(16px,1.7vw,20px)}
+.hp-prose{display:grid;grid-template-columns:220px 1fr;gap:56px;padding:52px 0;
+  border-top:1px solid var(--line)}
+.hp-prose:last-of-type{border-bottom:1px solid var(--line)}
+.hp-prose-k{font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--faint);padding-top:6px}
+.hp-prose-b{max-width:66ch}
+.hp-prose-b > * + *{margin-top:18px}
+.hp-prose-b h3{font-family:var(--serif);font-weight:400;font-size:25px;letter-spacing:-.015em;margin:0;
+  line-height:1.15}
+.hp-prose-b h4{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft);
+  margin:0;font-weight:500}
+.hp-prose-b p{font-size:14.5px;line-height:1.68;color:var(--muted);margin:0}
+.hp-prose-b p strong{color:var(--ink-soft);font-weight:500}
+.hp-prose-b ul{margin:0;padding-left:0;list-style:none}
+.hp-prose-b ul li{font-size:14px;line-height:1.6;color:var(--muted);padding:11px 0 11px 22px;
+  border-top:1px solid var(--line-soft);position:relative}
+.hp-prose-b ul li::before{content:"";position:absolute;left:2px;top:20px;width:5px;height:1px;background:var(--line)}
+.hp-prose-b code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;
+  background:var(--surface);border:1px solid var(--line-soft);border-radius:var(--r);padding:2px 6px;
+  color:var(--ink-soft);overflow-wrap:break-word}
+.hp-qa{border-top:1px solid var(--line-soft);padding:26px 0}
+.hp-qa:first-child{border-top:none;padding-top:0}
+.hp-qa h4{font-family:var(--serif);font-size:20px;font-weight:400;letter-spacing:-.012em;margin:0 0 11px;
+  text-transform:none;color:var(--ink)}
+.hp-qa p{font-size:14px;line-height:1.65;color:var(--muted);margin:0}
+
+/* ── FAQ accordion: an editorial row per question, opened one at a time ─ */
+.hp-col{max-width:880px;margin:0 auto}
+.hp-faq-group{margin-top:64px}
+.hp-faq-group:first-of-type{margin-top:0}
+.hp-faq-group > .hp-label{display:block;margin-bottom:20px}
+.hp-faq-list{border-top:1px solid var(--line)}
+.hp-faq{border-bottom:1px solid var(--line-soft)}
+.hp-faq:last-child{border-bottom-color:var(--line)}
+.hp-faq-q{display:flex;align-items:flex-start;gap:22px;width:100%;padding:27px 0;
+  transition:padding-left .3s,background .3s}
+.hp-faq-q:hover{padding-left:9px;background:linear-gradient(to right,var(--surface),transparent 55%)}
+.hp-faq-q .n{font-size:9.5px;letter-spacing:.24em;color:var(--faint);min-width:34px;flex:none;
+  font-variant-numeric:tabular-nums;padding-top:9px;transition:color .25s}
+.hp-faq-q[aria-expanded="true"] .n,.hp-faq-q:hover .n{color:var(--accent)}
+.hp-faq-q .t{flex:1;font-family:var(--serif);font-weight:400;font-size:clamp(19px,1.9vw,23px);
+  line-height:1.24;letter-spacing:-.014em;color:var(--ink)}
+/* the indicator is drawn, not typeset: two hairlines, one of which rotates away */
+.hp-faq-q .s{position:relative;width:11px;height:11px;flex:none;margin-left:24px;margin-top:7px}
+.hp-faq-q .s::before,.hp-faq-q .s::after{content:"";position:absolute;left:0;top:5px;width:11px;height:1px;
+  background:var(--muted);transition:transform .35s cubic-bezier(.2,.7,.3,1),background .25s}
+.hp-faq-q .s::after{transform:rotate(90deg)}
+.hp-faq-q:hover .s::before,.hp-faq-q:hover .s::after{background:var(--ink)}
+.hp-faq-q[aria-expanded="true"] .s::after{transform:rotate(0)}
+.hp-faq-q[aria-expanded="true"] .s::before,.hp-faq-q[aria-expanded="true"] .s::after{background:var(--ink)}
+/* height animates from 0fr to 1fr, so no measured pixel heights are needed */
+.hp-faq-a{display:grid;grid-template-rows:0fr;transition:grid-template-rows .42s cubic-bezier(.2,.7,.3,1)}
+.hp-faq[data-open="true"] .hp-faq-a{grid-template-rows:1fr}
+.hp-faq-a > div{overflow:hidden;opacity:0;visibility:hidden;
+  transition:opacity .28s ease,visibility 0s .42s}
+.hp-faq[data-open="true"] .hp-faq-a > div{opacity:1;visibility:visible;
+  transition:opacity .38s ease .1s,visibility 0s}
+.hp-faq-a p{font-size:14.5px;line-height:1.72;color:var(--muted);margin:0;max-width:68ch;
+  padding:0 47px 30px 56px}
+
+/* ── footer ──────────────────────────────────────────────────────────── */
+.hp-foot{border-top:1px solid var(--line);padding:60px 0 72px;display:flex;justify-content:space-between;
+  gap:48px;flex-wrap:wrap;align-items:flex-start}
+.hp-foot-s{font-family:var(--edit);font-style:italic;font-weight:300;font-size:17px;color:var(--muted);
+  margin:20px 0 0;max-width:34ch}
+.hp-foot-nav{display:flex;gap:56px;flex-wrap:wrap}
+.hp-foot-col{display:flex;flex-direction:column;gap:14px}
+.hp-foot-col .hp-label{margin-bottom:4px}
+.hp-foot-col a{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);
+  transition:color .2s}
+.hp-foot-col a:hover{color:var(--ink)}
+
+/* ── motion ──────────────────────────────────────────────────────────── */
+.hp-rev{opacity:0;transform:translateY(12px)}
+.hp-rev.in{opacity:1;transform:none;
+  transition:opacity .8s cubic-bezier(.2,.7,.3,1),transform .8s cubic-bezier(.2,.7,.3,1)}
+.hp-view{animation:page .45s cubic-bezier(.2,.7,.3,1)}
+@keyframes page{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.hp-card-in{animation:cardin .6s cubic-bezier(.2,.7,.3,1) both}
+@keyframes cardin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+section[id],div[id^="view"]{scroll-margin-top:calc(var(--head) + 22px)}
+
+/* ══ responsive ═══════════════════════════════════════════════════════ */
+@media (max-width:1439px){:root{--gut:48px}}
+@media (max-width:1279px){
+  :root{--gut:40px;--maxw:1120px}
+  .hp-hero{padding:78px 0 64px}
+  .hp-hero-in{gap:44px}
+  .hp-card.lead{padding:32px 32px 30px}
+  .hp-prose{grid-template-columns:180px 1fr;gap:40px}
+}
+@media (max-width:1023px){
+  :root{--gut:32px}
+  .hp-hero-in{grid-template-columns:1fr;gap:56px}
+  .hp-hero-copy{max-width:640px}
+  .hp-map-wrap{max-width:600px}
+  .hp-feed{grid-template-columns:1fr}
+  .hp-card.lead{grid-column:auto}
+  .hp-live{grid-template-columns:1fr 1fr}
+  .hp-live-c:nth-child(odd){border-left:none}
+  .hp-live-c:nth-child(n+3){border-top:1px solid var(--line)}
+  .hp-figs{grid-template-columns:1fr 1fr}
+  .hp-fig{padding:22px 0 4px 24px;border-left:1px solid var(--line-soft)}
+  .hp-fig:nth-child(odd){padding-left:0;border-left:none}
+  .hp-fig:nth-child(n+3){border-top:1px solid var(--line-soft);margin-top:4px;padding-top:22px}
+  .hp-method{grid-template-columns:1fr 1fr;gap:0 0}
+  .hp-step{padding:18px 22px 18px;border-left:1px solid var(--line-soft)}
+  .hp-step:nth-child(odd){padding-left:0;border-left:none}
+  .hp-step:nth-child(n+3){border-top:1px solid var(--line-soft)}
+  .hp-prose{grid-template-columns:1fr;gap:20px}
+  .hp-prose-k{padding-top:0}
+}
+@media (max-width:860px){
+  :root{--head:64px}
+  .hp-center,.hp-tools{display:none}
+  .hp-mob{display:flex;align-items:center;gap:4px;margin-left:auto}
+  .hp-sec{padding:64px 0 68px}
+  .hp-sec-head{flex-direction:column;align-items:flex-start;gap:20px;margin-bottom:36px}
+  .hp-hero{padding:52px 0 48px}
+  .hp-figs{margin-top:52px}
+  .hp-row{grid-template-columns:26px 1fr auto;gap:6px 16px;padding:22px 0 24px}
+  .hp-row:hover{padding-left:0;background:none}
+  .hp-row-b{grid-column:2/-1}
+  .hp-fig-r{grid-column:3;grid-row:1;text-align:right}
+  .hp-subj{font-size:20px}
+  .hp-page{padding:52px 0 24px}
+  .hp-page-head{margin-bottom:44px}
+  .hp-foot{padding:48px 0 60px;gap:36px}
+  .hp-foot-nav{gap:36px}
+}
+@media (max-width:640px){
+  :root{--gut:22px}
+  .hp-status .hide-s{display:none}
+  .hp-card{padding:24px 22px 22px}
+  .hp-card.lead{padding:26px 22px 24px}
+  .hp-card-h{font-size:23px}
+  .hp-card.lead .hp-card-h{font-size:27px}
+  /* a wrapped flex row leaves dividers dangling: grid every card on narrow screens */
+  .hp-ev,.hp-card.lead .hp-ev{display:grid;grid-template-columns:1fr 1fr;gap:20px 18px}
+  .hp-ev li,.hp-card.lead .hp-ev li{padding-right:0;margin-right:0;border-right:none}
+  .hp-now{flex-wrap:wrap}
+  .hp-now .rg{margin-left:0;width:100%;text-align:left;margin-top:6px}
+  .hp-ev-row{flex-direction:column;gap:6px}
+  .hp-ev-row .k{min-width:0}
+  /* discover on a phone: status stacks, evidence objects wrap without overflow */
+  .hp-live{grid-template-columns:1fr}
+  .hp-live-c{padding:18px 20px 20px;border-left:none}
+  .hp-live-c:nth-child(n+2){border-top:1px solid var(--line)}
+  .hp-live-c .v{font-size:24px}
+  .hp-disc-head{padding:44px 0 30px}
+  .hp-sec-feed{padding:36px 0 64px}
+  .hp-feed-bar{align-items:flex-start;gap:16px;margin-bottom:20px}
+  .hp-feed-tools{width:100%;justify-content:space-between;gap:14px}
+  .hp-find-sm{flex:1;max-width:none}
+  .hp-obj{flex-direction:column;gap:7px}
+  .hp-obj .k{min-width:0}
+  .hp-obj .go{margin-left:0;position:absolute;right:0;top:14px}
+  .hp-obj{position:relative;padding-right:22px}
+  .hp-primary{width:100%;justify-content:center}
+  .hp-method-cta{gap:18px;margin-top:36px}
+  .hp-figs{grid-template-columns:1fr}
+  .hp-fig{padding:20px 0 4px!important;border-left:none!important}
+  .hp-fig:nth-child(n+2){border-top:1px solid var(--line-soft);margin-top:2px;padding-top:20px!important}
+  .hp-method{grid-template-columns:1fr}
+  .hp-step{padding:16px 0!important;border-left:none!important}
+  .hp-step:nth-child(n+2){border-top:1px solid var(--line-soft)}
+  .hp-sig{grid-template-columns:1fr;padding-left:20px}
+  .hp-sig-gut{padding-right:0;display:flex;align-items:baseline;gap:10px;margin-bottom:12px}
+  .hp-sig-gut::after{right:auto;left:-20px;top:-24px;bottom:-26px}
+  .hp-sig-node{right:auto;left:-23.5px;top:3px}
+  .hp-sig-utc{margin-top:0}
+  .hp-sig-body{padding-left:0}
+  .hp-ov-in{padding:0 22px 48px}
+  .hp-res{flex-direction:column;gap:7px}
+  .hp-cats{gap:6px}
+  .hp-cat{padding:7px 11px}
+  /* the gutter number keeps its column, but the answer no longer needs to clear it */
+  .hp-faq-q{gap:16px;padding:23px 0}
+  .hp-faq-q .n{min-width:26px}
+  .hp-faq-q .s{margin-left:16px}
+  .hp-faq-a p{padding:0 0 26px 42px}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .hp *,.hp *::before,.hp *::after{animation:none!important;transition-duration:.01ms!important}
+  .hp-rev{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+<div class="hp">
+
+  <!-- ══ status line — live values, read from the chain ══ -->
+  <div class="hp-status">
+    <div class="hp-wrap hp-status-in">
+      <span class="hp-state"><span class="hp-dot quiet" id="stateDot"></span> <b id="stateText">Connecting</b></span>
+      <span class="hide-s" id="connDetail">reading Robinhood Chain</span>
+      <span class="hide-s">Block <b id="sBlock">&mdash;</b></span>
+      <span class="hide-s">Cadence <b id="sCadence">&mdash;</b></span>
+      <span class="sp">
+        <span class="hide-s">Chain <b id="sChain">&mdash;</b></span>
+        <span class="src hide-s" id="connSrc">rpc.mainnet.chain.robinhood.com</span>
+        <span class="hp-mono" id="clock">--:--:--</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- ══ header ══ -->
+  <header class="hp-head">
+    <div class="hp-wrap hp-head-in" style="position:relative">
+      <a href="#home" aria-label="Hood Powl, home">
+        <span class="hp-mark">
+          <span class="hp-bear" id="bearing" aria-hidden="true"></span>
+          <span class="hp-word"><span class="b">Hood Powl</span><span class="a">Robinhood Chain</span></span>
+        </span>
+      </a>
+
+      <nav class="hp-center">
+        <a class="hp-link on" href="#discover" data-nav="discover">Discover</a>
+      </nav>
+
+      <div class="hp-tools">
+        <button class="hp-tool" id="searchBtn">Search <span class="hp-kbd">&#8984;K</span></button>
+        <div class="hp-menu-wrap">
+          <button class="hp-icon" id="dotsBtn" aria-label="More" aria-expanded="false" aria-haspopup="true">
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+              <circle cx="8" cy="3" r="1.35" fill="currentColor"></circle>
+              <circle cx="8" cy="8" r="1.35" fill="currentColor"></circle>
+              <circle cx="8" cy="13" r="1.35" fill="currentColor"></circle>
+            </svg>
+          </button>
+          <div class="hp-menu" id="dotsMenu" hidden role="menu">
+            <a href="#record" role="menuitem" data-menu="record">The Record <span class="d">every read</span></a>
+            <div class="hp-menu-rule"></div>
+            <a href="#docs" role="menuitem" data-menu="docs">Docs <span class="d">how it works</span></a>
+            <a href="#blog" role="menuitem" data-menu="blog">Blog <span class="d">notes</span></a>
+            <a href="#faq" role="menuitem" data-menu="faq">FAQ <span class="d">questions</span></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="hp-mob">
+        <button class="hp-icon" id="searchBtnMob" aria-label="Search">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <circle cx="7" cy="7" r="5.2" stroke="currentColor" stroke-width="1.2"></circle>
+            <path d="M11 11l4 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"></path>
+          </svg>
+        </button>
+        <button class="hp-icon" id="menuBtn" aria-label="Open menu">
+          <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+            <circle cx="8" cy="3" r="1.35" fill="currentColor"></circle>
+            <circle cx="8" cy="8" r="1.35" fill="currentColor"></circle>
+            <circle cx="8" cy="13" r="1.35" fill="currentColor"></circle>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══ mobile sheet ══ -->
+  <div class="hp-sheet" id="sheet" hidden>
+    <div class="hp-sheet-h">
+      <span class="hp-mark">
+        <span class="hp-bear" id="bearing2" aria-hidden="true"></span>
+        <span class="hp-word"><span class="b">Hood Powl</span><span class="a">Robinhood Chain</span></span>
+      </span>
+      <button class="hp-sheet-x" id="sheetClose">Close</button>
+    </div>
+    <button class="hp-sheet-s" id="sheetSearch">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <circle cx="7" cy="7" r="5.2" stroke="currentColor" stroke-width="1.2"></circle>
+        <path d="M11 11l4 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"></path>
+      </svg>
+      Transaction, address or block
+    </button>
+    <div class="hp-sheet-l">
+      <a class="hp-sheet-i on" href="#discover" data-sheet="discover"><span class="n">01</span><span class="t">Discover</span></a>
+      <a class="hp-sheet-i" href="#record" data-sheet="record"><span class="n">02</span><span class="t">The Record</span></a>
+      <a class="hp-sheet-i" href="#docs" data-sheet="docs"><span class="n">03</span><span class="t">Docs</span></a>
+      <a class="hp-sheet-i" href="#blog" data-sheet="blog"><span class="n">04</span><span class="t">Blog</span></a>
+      <a class="hp-sheet-i" href="#faq" data-sheet="faq"><span class="n">05</span><span class="t">FAQ</span></a>
+      <a class="hp-sheet-i" href="#home" data-sheet="home"><span class="n">06</span><span class="t">Home</span></a>
+    </div>
+  </div>
+
+  <main>
+  <!-- ══════════════════════════════════════════════════════════════════
+       VIEW — DISCOVER
+       ══════════════════════════════════════════════════════════════════ -->
+  <div id="viewHome">
+
+    <section class="hp-hero" id="overview">
+      <div class="hp-wrap">
+        <div class="hp-hero-in">
+          <div class="hp-hero-copy">
+            <div class="hp-rev hp-label">Intelligence discovery</div>
+            <div class="hp-rev"><h1 class="hp-d1">See what<br>matters.</h1></div>
+            <div class="hp-rev">
+              <p class="hp-sup"><b>Intelligence discovery</b>on Robinhood Chain</p>
+            </div>
+            <div class="hp-rev hp-cta-row">
+              <a class="hp-cta" href="#discover">Open Discover
+                <svg width="11" height="9" viewBox="0 0 11 9" fill="none" aria-hidden="true"><path d="M0 4.5h9M6 1l3.4 3.5L6 8" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+              </a>
+              <a class="hp-cta2" href="#docs">How it works</a>
+            </div>
+          </div>
+
+          <!-- information map — labels carry real values -->
+          <div class="hp-rev hp-map-wrap">
+            <svg class="hp-map" viewBox="0 0 580 470" role="img" aria-label="Abstract map of the network reads behind Hood Powl">
+              <defs>
+                <pattern id="hpGrid" width="24" height="24" patternUnits="userSpaceOnUse">
+                  <circle cx="1" cy="1" r=".7" fill="var(--line)"></circle>
+                </pattern>
+              </defs>
+              <rect x="8" y="16" width="556" height="440" fill="url(#hpGrid)" opacity=".5"></rect>
+
+              <!-- connectors -->
+              <path class="ln" d="M252 92 H352"></path>
+              <path class="ln" d="M140 136 V244"></path>
+              <path class="ln" d="M452 128 V232 H332 V318"></path>
+              <path class="ln" d="M228 288 H296 V352 H352"></path>
+              <path class="ln" d="M198 388 H332" opacity=".7"></path>
+
+              <!-- primary block: network -->
+              <g class="drift">
+                <rect class="rf" x="28" y="48" width="224" height="88" rx="3"></rect>
+                <text class="lb" x="48" y="78">Network</text>
+                <text class="vl" x="48" y="114" id="mapBlock">&#8212;</text>
+              </g>
+
+              <!-- transactions -->
+              <g class="drift-2">
+                <rect class="r" x="352" y="56" width="196" height="72" rx="3"></rect>
+                <text class="lb" x="370" y="84">Interactions</text>
+                <text class="vl" x="370" y="115" id="mapTx">&#8212;</text>
+              </g>
+
+              <!-- cadence -->
+              <rect class="r" x="28" y="244" width="200" height="88" rx="3"></rect>
+              <text class="lb" x="48" y="274">Cadence</text>
+              <text class="vl" x="48" y="310" id="mapCadence">&#8212;</text>
+
+              <!-- addresses -->
+              <g class="drift">
+                <rect class="rf" x="352" y="318" width="196" height="88" rx="3"></rect>
+                <text class="lb" x="370" y="348">Addresses</text>
+                <text class="vl" x="370" y="384" id="mapAddr">&#8212;</text>
+              </g>
+
+              <!-- quiet geometry -->
+              <rect class="r" x="268" y="176" width="52" height="34" rx="2" opacity=".8"></rect>
+              <rect class="r" x="96" y="370" width="102" height="36" rx="2" opacity=".8"></rect>
+              <circle class="nd-f" cx="116" cy="388" r="1.6"></circle>
+              <circle class="nd-f" cx="126" cy="388" r="1.6" opacity=".6"></circle>
+              <circle class="nd-f" cx="136" cy="388" r="1.6" opacity=".35"></circle>
+
+              <!-- nodes -->
+              <circle class="nd" cx="252" cy="92" r="3.4"></circle>
+              <circle class="nd" cx="352" cy="92" r="3.4"></circle>
+              <circle class="nd" cx="140" cy="244" r="3.4"></circle>
+              <circle class="nd" cx="228" cy="288" r="3.4"></circle>
+              <circle class="nd" cx="352" cy="352" r="3.4"></circle>
+              <circle class="nd-f blink" cx="452" cy="128" r="2.4"></circle>
+              <circle class="nd-f" cx="332" cy="318" r="2.4"></circle>
+              <circle class="nd-f blink" cx="296" cy="352" r="2.2"></circle>
+            </svg>
+          </div>
+        </div>
+
+        <!-- real figures -->
+        <div class="hp-rev hp-figs">
+          <div class="hp-fig">
+            <span class="l">Latest block</span><span class="v" id="figBlock">&mdash;</span>
+            <span class="n" id="figBlockNote">Connecting to Robinhood Chain</span>
+          </div>
+          <div class="hp-fig">
+            <span class="l">Transactions</span><span class="v" id="figTx">&mdash;</span>
+            <span class="n" id="figTxNote">In the latest block</span>
+          </div>
+          <div class="hp-fig">
+            <span class="l">Block cadence</span><span class="v" id="figCadence">&mdash;</span>
+            <span class="n" id="figCadenceNote">Measuring across headers</span>
+          </div>
+          <div class="hp-fig">
+            <span class="l">Network</span>
+            <span class="v" style="display:inline-flex;align-items:center;gap:11px;font-size:19px">
+              <span class="hp-dot quiet" id="figDot"></span> <span id="figStatus">Connecting</span>
+            </span>
+            <span class="n" id="figChain">Chain 4663 expected</span>
+          </div>
+        </div>
+        <div class="hp-rev"><p class="hp-note" id="sourceNote">Read-only &middot; direct JSON-RPC reads from Robinhood Chain</p></div>
+      </div>
+    </section>
+
+    <!-- ══ method: how a signal is made ══ -->
+    <div class="hp-wrap">
+      <section class="hp-sec" id="method">
+        <div class="hp-rev">
+          <div class="hp-method">
+            <div class="hp-step">
+              <span class="hp-step-l"><i></i>Read</span>
+              <span class="hp-step-c">Blocks, transactions and logs, straight from the chain.</span>
+            </div>
+            <div class="hp-step">
+              <span class="hp-step-l"><i></i>Derive</span>
+              <span class="hp-step-c">Counted, compared, never invented.</span>
+            </div>
+            <div class="hp-step">
+              <span class="hp-step-l"><i></i>Explain</span>
+              <span class="hp-step-c">Written out in plain language.</span>
+            </div>
+            <div class="hp-step">
+              <span class="hp-step-l"><i></i>Verify</span>
+              <span class="hp-step-c">Every claim opens its own evidence.</span>
+            </div>
+          </div>
+        </div>
+        <div class="hp-rev hp-method-cta">
+          <a class="hp-cta" href="#discover">Open Discover
+            <svg width="11" height="9" viewBox="0 0 11 9" fill="none" aria-hidden="true"><path d="M0 4.5h9M6 1l3.4 3.5L6 8" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </a>
+          <p class="hp-edit">Signals from the network, grounded in live data.</p>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       VIEW — DISCOVER · the intelligence feed
+       ══════════════════════════════════════════════════════════════════ -->
+  <div id="viewDiscover" hidden>
+    <div class="hp-wrap">
+
+      <!-- page head -->
+      <div class="hp-disc-head">
+        <span class="hp-label">Discover</span>
+        <h1 class="hp-d2">What matters right now.</h1>
+        <p class="hp-edit">Signals from the network, grounded in live data.</p>
+      </div>
+
+      <!-- live status, read from the chain on every pass -->
+      <div class="hp-live" id="liveBar">
+        <div class="hp-live-c">
+          <span class="l">Status</span>
+          <span class="v"><span class="hp-dot quiet" id="dDot"></span> <span id="dState">Connecting</span></span>
+          <span class="n" id="dStateNote">reading Robinhood Chain</span>
+        </div>
+        <div class="hp-live-c">
+          <span class="l">Block</span>
+          <span class="v hp-num" id="dBlock">&mdash;</span>
+          <span class="n" id="dBlockNote">latest read from the node</span>
+        </div>
+        <div class="hp-live-c">
+          <span class="l">Activity</span>
+          <span class="v hp-num" id="dActivity">&mdash;</span>
+          <span class="n" id="dActivityNote">interactions in the window</span>
+        </div>
+        <div class="hp-live-c">
+          <span class="l">Cadence</span>
+          <span class="v hp-num" id="dCadence">&mdash;</span>
+          <span class="n" id="dCadenceNote">seconds between blocks</span>
+        </div>
+      </div>
+
+      <section class="hp-sec hp-sec-feed" id="discover-feed">
+
+        <!-- feed bar: the heading leads, search stays secondary -->
+        <div class="hp-feed-bar">
+          <div class="hp-feed-title">
+            <span class="hp-label">What&rsquo;s happening</span>
+          </div>
+          <div class="hp-feed-tools">
+            <label class="hp-find hp-find-sm">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <circle cx="7" cy="7" r="5.2" stroke="currentColor" stroke-width="1.2"></circle>
+                <path d="M11 11l4 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"></path>
+              </svg>
+              <input id="findInput" placeholder="Address, transaction or block" aria-label="Search the chain" />
+              <span class="hp-kbd">&crarr;</span>
+            </label>
+            <button class="hp-act" id="refreshBtn">Refresh
+              <svg width="11" height="9" viewBox="0 0 11 9" fill="none" aria-hidden="true"><path d="M0 4.5h9M6 1l3.4 3.5L6 8" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="hp-feed-meta">
+          <div class="hp-cats" id="cats"></div>
+          <div class="hp-now">
+            <span class="hd"><span class="hp-dot live"></span> Now</span>
+            <span class="hp-mono"><span id="nowClock">--:--:--</span> UTC &middot; <span id="nowNote">reading</span></span>
+            <span class="rg" id="feedRange">&mdash;</span>
+          </div>
+        </div>
+
+        <div class="hp-feed" id="feed"></div>
+        <div class="hp-empty hp-feed-state" id="feedState">
+          <h4>Reading the chain.</h4>
+          <p>Pulling the most recent blocks from Robinhood Chain.</p>
+        </div>
+      </section>
+
+      <!-- ══ assets in motion (real ERC-20 Transfer reads) ══ -->
+      <section class="hp-sec" id="assets">
+        <div class="hp-sec-head">
+          <div class="hp-rev">
+            <h2 class="hp-d2">Assets in motion</h2>
+            <p class="hp-edit">The most transferred tokens inside the window just read.</p>
+          </div>
+          <div class="hp-rev"><span class="hp-label" id="tokenRange">&mdash;</span></div>
+        </div>
+        <div class="hp-rows" id="tokenIndex"></div>
+        <div class="hp-empty" id="tokenState">
+          <h4>Reading transfer logs.</h4>
+          <p>Looking for ERC-20 Transfer events in the blocks just read.</p>
+        </div>
+      </section>
+
+      <!-- ══ registry — honest empty ══ -->
+      <section class="hp-sec" id="registry">
+        <div class="hp-sec-head">
+          <div class="hp-rev">
+            <h2 class="hp-d2">Registry</h2>
+            <p class="hp-edit">Named projects building on Robinhood Chain.</p>
+          </div>
+        </div>
+        <div class="hp-empty">
+          <h4>No projects listed yet.</h4>
+          <p>A contract address is not a project &mdash; a name, a category and a website have to come from
+            somewhere. This index stays empty until verified entries are added to the registry.</p>
+          <p>Contracts appear in Discover the moment they deploy, named or not.</p>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       VIEW — THE RECORD · reached from the ⋮ menu, same markup and the
+       same live elements as before, just no longer inside Discover
+       ══════════════════════════════════════════════════════════════════ -->
+  <div id="viewRecord" hidden>
+    <div class="hp-wrap">
+      <section class="hp-sec hp-sec-top" id="record">
+        <div class="hp-sec-head">
+          <div class="hp-rev">
+            <h2 class="hp-d2">The record</h2>
+            <p class="hp-edit">Every block in the window, with the first transactions of each,
+              written in plain language.</p>
+          </div>
+          <div class="hp-rev"><span class="hp-label" id="activityRange">&mdash;</span></div>
+        </div>
+        <div class="hp-log" id="activityStream"></div>
+        <div class="hp-empty" id="activityState" hidden></div>
+      </section>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       VIEW — DOCS
+       ══════════════════════════════════════════════════════════════════ -->
+  <div id="viewDocs" class="hp-wrap hp-page" hidden>
+    <div class="hp-page-head">
+      <span class="hp-label">Docs</span>
+      <h1 class="hp-d2">How Hood Powl works.</h1>
+      <p class="hp-edit">A read-only intelligence layer over Robinhood Chain. No index, no account,
+        no opinion that cannot be checked.</p>
+    </div>
+
+    <div class="hp-prose">
+      <div class="hp-prose-k">01 &nbsp;What it is</div>
+      <div class="hp-prose-b">
+        <h3>Discovery, not dashboards.</h3>
+        <p>Hood Powl reads Robinhood Chain directly and tells you what changed. It is not a wallet,
+          an exchange, a portfolio tracker or a price feed. There is nothing to connect and nothing to sign.</p>
+        <p>Every card in Discover is a claim about the network. Every claim carries the counts it was
+          derived from, and a way to look those counts up yourself.</p>
+      </div>
+    </div>
+
+    <div class="hp-prose">
+      <div class="hp-prose-k">02 &nbsp;Where the data comes from</div>
+      <div class="hp-prose-b">
+        <h4>One source, read live</h4>
+        <p>All values come from JSON-RPC calls to <code id="docsRpc">rpc.mainnet.chain.robinhood.com</code>,
+          the Robinhood Chain mainnet endpoint. The chain id is read on every pass and reported next to the
+          figures &mdash; chain <code>4663</code> is what Hood Powl expects to see.</p>
+        <ul>
+          <li><code>eth_chainId</code> &mdash; confirms which chain answered</li>
+          <li><code>eth_blockNumber</code> &mdash; the head of the chain</li>
+          <li><code>eth_getBlockByNumber</code> &mdash; blocks with their full transaction bodies</li>
+          <li><code>eth_getBlockTransactionCountByNumber</code> &mdash; the node&rsquo;s own count for the head block</li>
+          <li><code>eth_getLogs</code> &mdash; ERC-20 Transfer events across the window</li>
+          <li><code>eth_call</code> &mdash; <code>name()</code>, <code>symbol()</code>, <code>decimals()</code> on tokens that appeared</li>
+          <li><code>eth_getTransactionByHash</code>, <code>eth_getTransactionReceipt</code>, <code>eth_getCode</code> &mdash; search lookups</li>
+        </ul>
+        <p>There is no database and no cache in between. Point it at another node with
+          <code>?rpc=&lt;url&gt;</code> and every figure on the page comes from that node instead.</p>
+      </div>
+    </div>
+
+    <div class="hp-prose">
+      <div class="hp-prose-k">02b &nbsp;The indexed layer</div>
+      <div class="hp-prose-b">
+        <h4>A second source, for context only</h4>
+        <p>Some things a node cannot cheaply answer: what a transaction's input data means, how many
+          times an address has ever been used, whether a contract's source is verified, how many
+          holders a token has. For those, Hood Powl reads the public
+          <code id="docsBs">robinhoodchain.blockscout.com</code> API — the official Robinhood Chain
+          explorer index.</p>
+        <ul>
+          <li><code>/api/v2/addresses/{address}</code> &mdash; contract or account, verified status,
+            indexed name, proxy target, deployer</li>
+          <li><code>/api/v2/addresses/{address}/counters</code> &mdash; lifetime transaction and
+            token-transfer totals</li>
+          <li><code>/api/v2/transactions/{hash}</code> &mdash; decoded method name, status,
+            gas used, timestamp, token transfers</li>
+          <li><code>/api/v2/tokens/{address}</code> &mdash; standard, holder count, total supply</li>
+          <li><code>/api/v2/tokens/{address}/transfers</code> &mdash; a sample of recent indexed transfers</li>
+        </ul>
+        <p><b>It is never canonical.</b> Every figure on a card, in the live bar and in The Record is
+          measured from the RPC; the indexer only adds a clearly labelled <b>Indexed context</b> block
+          beneath the evidence. If it is slow or down, that block says so and nothing else changes.</p>
+        <p>These calls are made <b>only when you open evidence or run a lookup</b> &mdash; never on the
+          refresh cycle &mdash; and results are cached, because the endpoint publishes a rate limit.
+          No API key, no account and no paid plan is involved. The responses also carry prices, market
+          caps and 24-hour volume; those fields are deliberately ignored, for the same reason as
+          everywhere else here.</p>
+      </div>
+    </div>
+
+    <div class="hp-prose">
+      <div class="hp-prose-k">03 &nbsp;The window</div>
+      <div class="hp-prose-b">
+        <h4>A short, honest horizon</h4>
+        <p>Each pass reads the head block and the blocks immediately before it &mdash;
+          <b id="docsWindow">a fixed window</b> &mdash; and refreshes every
+          <b id="docsRefresh">few seconds</b>. Block cadence is measured separately, across the
+          <b id="docsSpan">headers</b> before the head.</p>
+        <p>This means Hood Powl describes the recent present, not history. When a card says
+          &ldquo;in this window&rdquo;, that is the exact set of blocks named in its evidence &mdash;
+          nothing before them is being counted.</p>
+      </div>
+    </div>
+
+    <div class="hp-prose">
+      <div class="hp-prose-k">04 &nbsp;How signals are derived</div>
+      <div class="hp-prose-b">
+        <h4>Seven rules, applied to real counts</h4>
+        <ul>
+          <li><b>Rising / easing / steady</b> &mdash; transactions per block in the most recent half of the
+            window, compared against the earlier half. Rising above 1.4&times;, easing below 0.65&times;.</li>
+          <li><b>Emerging</b> &mdash; transactions with no <code>to</code> address, which is what a contract
+            deployment looks like on the wire.</li>
+          <li><b>Turnover</b> &mdash; addresses in this window that were absent from the previous one. The
+            address set from the last pass is kept in memory and compared, and the rule is skipped entirely
+            unless the two windows are separated by at least a full window of blocks. It is a statement about
+            two consecutive reads, never about the whole chain.</li>
+          <li><b>Concentration</b> &mdash; when one address receives a repeated share of the window&rsquo;s
+            transactions.</li>
+          <li><b>Notable</b> &mdash; the single largest transaction value in the window, converted from wei
+            with full precision.</li>
+          <li><b>Assets</b> &mdash; the token with the most ERC-20 Transfer logs, named from its own contract.</li>
+          <li><b>Network</b> &mdash; block cadence and the head block, as the node reports them.</li>
+        </ul>
+        <p>A rule that has nothing to say produces no card. If none of them do, Discover says so
+          instead of filling the space.</p>
+      </div>
+    </div>
+
+    <div class="hp-prose">
+      <div class="hp-prose-k">05 &nbsp;Evidence</div>
+      <div class="hp-prose-b">
+        <h4>Every claim opens</h4>
+        <p>Each card lists the counts behind it &mdash; interactions, unique addresses, blocks observed,
+          the time window &mdash; and <b>View evidence</b> expands into three parts: <b>why this signal
+          appeared</b>, the <b>observation</b> it was measured over, and the <b>evidence</b> itself &mdash;
+          the exact blocks, transactions, addresses and contracts involved.</p>
+        <p>From there, each identifier is a live lookup: Hood Powl asks the node again, in front of you,
+          and shows what it returns. If the node disagrees with the card, the node is right.</p>
+      </div>
+    </div>
+
+    <div class="hp-prose">
+      <div class="hp-prose-k">06 &nbsp;Limits</div>
+      <div class="hp-prose-b">
+        <h4>What is deliberately absent</h4>
+        <ul>
+          <li>No prices, market caps or valuations &mdash; none of that is on-chain.</li>
+          <li>No holder counts or balances &mdash; that needs an indexer, and there isn&rsquo;t one.</li>
+          <li>No history or charts beyond the live window.</li>
+          <li>No mock data, ever. A failed read shows the error the node returned.</li>
+        </ul>
+        <p>A node behind a load balancer can answer from slightly different heights between calls, and a
+          browser reading an RPC endpoint directly is subject to that endpoint&rsquo;s CORS policy.
+          Both surface as a plain <b>Unavailable</b> state with the reason attached.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       VIEW — BLOG
+       ══════════════════════════════════════════════════════════════════ -->
+  <div id="viewBlog" class="hp-wrap hp-page" hidden>
+    <div class="hp-page-head">
+      <span class="hp-label">Blog</span>
+      <h1 class="hp-d2">Notes on what we read.</h1>
+      <p class="hp-edit">Method notes, product updates and research on Robinhood Chain activity.</p>
+    </div>
+
+    <div class="hp-prose">
+      <div class="hp-prose-k">Index</div>
+      <div class="hp-prose-b">
+        <h3>No posts published yet.</h3>
+        <p>This index is intentionally empty. Posts are written, dated and published by hand &mdash;
+          Hood Powl will not generate them, and it will not display placeholder entries to make the
+          page look busier than it is.</p>
+        <p>The same rule that governs the Discover feed governs this page: nothing appears here
+          unless it is real.</p>
+      </div>
+    </div>
+
+    <div class="hp-prose">
+      <div class="hp-prose-k">In the meantime</div>
+      <div class="hp-prose-b">
+        <h4>Read the method instead</h4>
+        <p><b>Docs</b> sets out exactly which calls are made, how each signal is derived, and what
+          Hood Powl refuses to estimate. It is the closest thing to a first post.</p>
+        <p><b>Discover</b> is live now, and the record section under it lists every block read on the
+          current pass, with the transactions inside them.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:24px">
+          <a class="hp-trace" href="#docs">Read the docs</a>
+          <a class="hp-trace" href="#discover">Open discover</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       VIEW — FAQ
+       ══════════════════════════════════════════════════════════════════ -->
+  <div id="viewFaq" class="hp-wrap hp-page" hidden>
+    <div class="hp-col">
+      <div class="hp-page-head">
+        <span class="hp-label">Questions</span>
+        <h1 class="hp-d2">FAQ</h1>
+        <p class="hp-edit">Everything you need to understand Hood Powl.</p>
+      </div>
+
+      <!-- one row per question; the accordion opens a single row at a time -->
+      <div class="hp-faq-group">
+        <div class="hp-faq-list" id="faqList">
+          <div class="hp-faq">
+            <button class="hp-faq-q" id="faqQ01" aria-expanded="false" aria-controls="faqA01">
+              <span class="n">01</span>
+              <span class="t">What is Hood Powl?</span>
+              <span class="s" aria-hidden="true"></span>
+            </button>
+            <div class="hp-faq-a" id="faqA01" role="region" aria-labelledby="faqQ01">
+              <div><p>Hood Powl is an intelligence discovery platform built around live data from
+                Robinhood Chain. It turns network activity into concise signals and evidence that help
+                users understand what is happening onchain.</p></div>
+            </div>
+          </div>
+
+          <div class="hp-faq">
+            <button class="hp-faq-q" id="faqQ02" aria-expanded="false" aria-controls="faqA02">
+              <span class="n">02</span>
+              <span class="t">What does Hood Powl actually do?</span>
+              <span class="s" aria-hidden="true"></span>
+            </button>
+            <div class="hp-faq-a" id="faqA02" role="region" aria-labelledby="faqQ02">
+              <div><p>Hood Powl observes live network activity, analyzes patterns, and surfaces signals
+                that may deserve attention. Each signal is connected to underlying blockchain
+                evidence.</p></div>
+            </div>
+          </div>
+
+          <div class="hp-faq">
+            <button class="hp-faq-q" id="faqQ03" aria-expanded="false" aria-controls="faqA03">
+              <span class="n">03</span>
+              <span class="t">Where does the data come from?</span>
+              <span class="s" aria-hidden="true"></span>
+            </button>
+            <div class="hp-faq-a" id="faqA03" role="region" aria-labelledby="faqQ03">
+              <div><p>Canonical live measurements come from the Robinhood Chain RPC. Blockscout is used
+                as an indexed evidence and enrichment layer.</p></div>
+            </div>
+          </div>
+
+          <div class="hp-faq">
+            <button class="hp-faq-q" id="faqQ04" aria-expanded="false" aria-controls="faqA04">
+              <span class="n">04</span>
+              <span class="t">Is the data real-time?</span>
+              <span class="s" aria-hidden="true"></span>
+            </button>
+            <div class="hp-faq-a" id="faqA04" role="region" aria-labelledby="faqQ04">
+              <div><p>Hood Powl reads live blockchain data and continuously evaluates activity within
+                its configured observation window.</p></div>
+            </div>
+          </div>
+
+          <div class="hp-faq">
+            <button class="hp-faq-q" id="faqQ05" aria-expanded="false" aria-controls="faqA05">
+              <span class="n">05</span>
+              <span class="t">Does Hood Powl use fake or simulated data?</span>
+              <span class="s" aria-hidden="true"></span>
+            </button>
+            <div class="hp-faq-a" id="faqA05" role="region" aria-labelledby="faqQ05">
+              <div><p>No. Intelligence measurements are derived from live network responses. Static
+                placeholder values must never be presented as live blockchain data.</p></div>
+            </div>
+          </div>
+
+          <div class="hp-faq">
+            <button class="hp-faq-q" id="faqQ06" aria-expanded="false" aria-controls="faqA06">
+              <span class="n">06</span>
+              <span class="t">What is Intelligence?</span>
+              <span class="s" aria-hidden="true"></span>
+            </button>
+            <div class="hp-faq-a" id="faqA06" role="region" aria-labelledby="faqQ06">
+              <div><p>Intelligence is Hood Powl&rsquo;s interpretation layer. Instead of simply displaying
+                raw blockchain events, it identifies patterns such as repeated interaction, notable
+                transfers, activity changes, and other network signals.</p></div>
+            </div>
+          </div>
+
+          <div class="hp-faq">
+            <button class="hp-faq-q" id="faqQ07" aria-expanded="false" aria-controls="faqA07">
+              <span class="n">07</span>
+              <span class="t">What is Discover?</span>
+              <span class="s" aria-hidden="true"></span>
+            </button>
+            <div class="hp-faq-a" id="faqA07" role="region" aria-labelledby="faqQ07">
+              <div><p>Discover is the main intelligence feed. It organizes notable network activity into
+                readable signals so users can quickly understand what matters.</p></div>
+            </div>
+          </div>
+
+          <div class="hp-faq">
+            <button class="hp-faq-q" id="faqQ08" aria-expanded="false" aria-controls="faqA08">
+              <span class="n">08</span>
+              <span class="t">What is The Record?</span>
+              <span class="s" aria-hidden="true"></span>
+            </button>
+            <div class="hp-faq-a" id="faqA08" role="region" aria-labelledby="faqQ08">
+              <div><p>The Record provides a chronological view of blockchain activity within the
+                observation window, including blocks and transactions presented in plain language.</p></div>
+            </div>
+          </div>
+
+          <div class="hp-faq">
+            <button class="hp-faq-q" id="faqQ09" aria-expanded="false" aria-controls="faqA09">
+              <span class="n">09</span>
+              <span class="t">What is Blockscout used for?</span>
+              <span class="s" aria-hidden="true"></span>
+            </button>
+            <div class="hp-faq-a" id="faqA09" role="region" aria-labelledby="faqQ09">
+              <div><p>Blockscout provides indexed blockchain data that can be used to cross-check and
+                enrich evidence. Robinhood Chain RPC remains the canonical source for live
+                measurements.</p></div>
+            </div>
+          </div>
+
+          <div class="hp-faq">
+            <button class="hp-faq-q" id="faqQ10" aria-expanded="false" aria-controls="faqA10">
+              <span class="n">10</span>
+              <span class="t">Can I verify an intelligence signal?</span>
+              <span class="s" aria-hidden="true"></span>
+            </button>
+            <div class="hp-faq-a" id="faqA10" role="region" aria-labelledby="faqQ10">
+              <div><p>Yes. Intelligence cards can be traced back to underlying blockchain evidence such
+                as addresses, blocks, transactions, and activity.</p></div>
+            </div>
+          </div>
+
+          <div class="hp-faq">
+            <button class="hp-faq-q" id="faqQ11" aria-expanded="false" aria-controls="faqA11">
+              <span class="n">11</span>
+              <span class="t">Does Hood Powl require a wallet?</span>
+              <span class="s" aria-hidden="true"></span>
+            </button>
+            <div class="hp-faq-a" id="faqA11" role="region" aria-labelledby="faqQ11">
+              <div><p>No wallet connection is required to explore the public intelligence and network
+                data.</p></div>
+            </div>
+          </div>
+
+          <div class="hp-faq">
+            <button class="hp-faq-q" id="faqQ12" aria-expanded="false" aria-controls="faqA12">
+              <span class="n">12</span>
+              <span class="t">Is Hood Powl a trading terminal?</span>
+              <span class="s" aria-hidden="true"></span>
+            </button>
+            <div class="hp-faq-a" id="faqA12" role="region" aria-labelledby="faqQ12">
+              <div><p>No. Hood Powl is designed as an intelligence discovery platform, not a trading
+                terminal or price dashboard.</p></div>
+            </div>
+          </div>
+
+          <div class="hp-faq">
+            <button class="hp-faq-q" id="faqQ13" aria-expanded="false" aria-controls="faqA13">
+              <span class="n">13</span>
+              <span class="t">Does Hood Powl provide financial advice?</span>
+              <span class="s" aria-hidden="true"></span>
+            </button>
+            <div class="hp-faq-a" id="faqA13" role="region" aria-labelledby="faqQ13">
+              <div><p>No. Hood Powl provides data, observations, and intelligence signals. Users are
+                responsible for interpreting information and making their own decisions.</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- kept from the earlier FAQ: the practical answers about running the page -->
+      <div class="hp-faq-group">
+        <span class="hp-label">Also asked</span>
+        <div class="hp-faq-list">
+          <div class="hp-faq">
+            <button class="hp-faq-q" id="faqQ14" aria-expanded="false" aria-controls="faqA14">
+              <span class="n">14</span>
+              <span class="t">Are the intelligence cards AI opinions?</span>
+              <span class="s" aria-hidden="true"></span>
+            </button>
+            <div class="hp-faq-a" id="faqA14" role="region" aria-labelledby="faqQ14">
+              <div><p>No. Each card is a fixed rule applied to counts taken from the blocks just read.
+                The wording is written; the figures are measured. Open the evidence and you see the
+                same counts the rule saw.</p></div>
+            </div>
+          </div>
+
+          <div class="hp-faq">
+            <button class="hp-faq-q" id="faqQ15" aria-expanded="false" aria-controls="faqA15">
+              <span class="n">15</span>
+              <span class="t">What is the search box for?</span>
+              <span class="s" aria-hidden="true"></span>
+            </button>
+            <div class="hp-faq-a" id="faqA15" role="region" aria-labelledby="faqQ15">
+              <div><p>A transaction hash, an address or a block number. The lookup goes to the same node
+                the rest of the page reads, and shows what it returns &mdash; including
+                &ldquo;not found&rdquo;.</p></div>
+            </div>
+          </div>
+
+          <div class="hp-faq">
+            <button class="hp-faq-q" id="faqQ16" aria-expanded="false" aria-controls="faqA16">
+              <span class="n">16</span>
+              <span class="t">How often does it update?</span>
+              <span class="s" aria-hidden="true"></span>
+            </button>
+            <div class="hp-faq-a" id="faqA16" role="region" aria-labelledby="faqQ16">
+              <div><p>Automatically, on a fixed interval while the tab is visible, and immediately when
+                you press Refresh. The exact interval is stated in
+                <a href="#docs" style="border-bottom:1px solid var(--line)">Docs</a>.</p></div>
+            </div>
+          </div>
+
+          <div class="hp-faq">
+            <button class="hp-faq-q" id="faqQ17" aria-expanded="false" aria-controls="faqA17">
+              <span class="n">17</span>
+              <span class="t">Why is there no price, market cap or holder count?</span>
+              <span class="s" aria-hidden="true"></span>
+            </button>
+            <div class="hp-faq-a" id="faqA17" role="region" aria-labelledby="faqQ17">
+              <div><p>Because none of those can be read from a node. Prices live on markets and holder
+                counts need an indexer. Hood Powl would have to guess, so it leaves them out.</p></div>
+            </div>
+          </div>
+
+          <div class="hp-faq">
+            <button class="hp-faq-q" id="faqQ18" aria-expanded="false" aria-controls="faqA18">
+              <span class="n">18</span>
+              <span class="t">Why does a token show no name or symbol?</span>
+              <span class="s" aria-hidden="true"></span>
+            </button>
+            <div class="hp-faq-a" id="faqA18" role="region" aria-labelledby="faqQ18">
+              <div><p>Its contract did not answer <code>name()</code> or <code>symbol()</code>. Plenty of
+                valid contracts do not, so the address is shown as-is rather than invented.</p></div>
+            </div>
+          </div>
+
+          <div class="hp-faq">
+            <button class="hp-faq-q" id="faqQ19" aria-expanded="false" aria-controls="faqA19">
+              <span class="n">19</span>
+              <span class="t">It says Unavailable. What happened?</span>
+              <span class="s" aria-hidden="true"></span>
+            </button>
+            <div class="hp-faq-a" id="faqA19" role="region" aria-labelledby="faqQ19">
+              <div><p>A read failed and the reason is printed with it &mdash; an HTTP status, an RPC
+                error, or a request the browser blocked. Hood Powl shows that instead of falling back to
+                stale or invented numbers.</p></div>
+            </div>
+          </div>
+
+          <div class="hp-faq">
+            <button class="hp-faq-q" id="faqQ20" aria-expanded="false" aria-controls="faqA20">
+              <span class="n">20</span>
+              <span class="t">Discover is empty but the connection is live.</span>
+              <span class="s" aria-hidden="true"></span>
+            </button>
+            <div class="hp-faq-a" id="faqA20" role="region" aria-labelledby="faqQ20">
+              <div><p>Then the blocks just read genuinely contained nothing worth reporting. It is a
+                quiet window, not a bug &mdash; the block range it read is printed above the feed.</p></div>
+            </div>
+          </div>
+
+          <div class="hp-faq">
+            <button class="hp-faq-q" id="faqQ21" aria-expanded="false" aria-controls="faqA21">
+              <span class="n">21</span>
+              <span class="t">Can I point it at a different node?</span>
+              <span class="s" aria-hidden="true"></span>
+            </button>
+            <div class="hp-faq-a" id="faqA21" role="region" aria-labelledby="faqQ21">
+              <div><p>Yes, with <code>?rpc=&lt;url&gt;</code>. The endpoint actually in use is always
+                shown in the status line at the top of the page.</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </main>
+
+  <!-- ══ footer ══ -->
+  <div class="hp-wrap">
+    <footer class="hp-foot">
+      <div>
+        <span class="hp-mark">
+          <span class="hp-bear" id="bearing3" aria-hidden="true"></span>
+          <span class="hp-word"><span class="b">Hood Powl</span><span class="a">Robinhood Chain</span></span>
+        </span>
+        <p class="hp-foot-s">Discover what is happening. Understand why it matters. Verify the evidence.</p>
+      </div>
+      <div class="hp-foot-nav">
+        <div class="hp-foot-col">
+          <span class="hp-label">Product</span>
+          <a href="#discover">Discover</a>
+          <a href="#assets">Assets</a>
+        </div>
+        <div class="hp-foot-col">
+          <span class="hp-label">More</span>
+          <a href="#record">The Record</a>
+          <a href="#docs">Docs</a>
+          <a href="#blog">Blog</a>
+          <a href="#faq">FAQ</a>
+        </div>
+        <div class="hp-foot-col">
+          <span class="hp-label">Source</span>
+          <a href="#docs" id="footSrc">rpc.mainnet.chain.robinhood.com</a>
+          <a href="#docs">Read-only</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ══ search overlay ══ -->
+  <div class="hp-ov" id="overlay" hidden>
+    <div class="hp-ov-in">
+      <div class="hp-ov-bar">
+        <input class="hp-ov-input" id="ovInput" placeholder="Transaction, address or block" />
+        <button class="hp-kbd" id="ovClose">ESC</button>
+      </div>
+      <div id="ovBody"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ══ configuration ═════════════════════════════════════════════════════
+     Official Robinhood Chain mainnet RPC. Override for testing with
+     ?rpc=<url>. All reads below are eth_* JSON-RPC calls against it.
+     There is no fallback data anywhere in this file: a failed read shows
+     "Unavailable" and the reason. */
+  var params   = new URLSearchParams(location.search);
+  var RPC_URL  = params.get("rpc") || "https://rpc.mainnet.chain.robinhood.com";
+  var CHAIN_ID = 4663;
+  var WINDOW   = 20;         // blocks read per refresh (~2s of chain time at current cadence)
+  var CADENCE_SPAN = 20;     // headers apart for the cadence measurement
+  var REFRESH_MS = 15000;
+  var TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+
+  var $ = function (id) { return document.getElementById(id); };
+  var reqId = 1;
+
+  /* ══ JSON-RPC transport ═══════════════════════════════════════════════ */
+  function rpc(method, prms) {
+    return fetch(RPC_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: reqId++, method: method, params: prms || [] })
+    }).then(function (res) {
+      if (!res.ok) throw new Error("HTTP " + res.status + " from RPC");
+      return res.json();
+    }).then(function (j) {
+      if (j && j.error) throw new Error(j.error.message || "RPC error on " + method);
+      return j ? j.result : null;
+    });
+  }
+  function rpcBatch(calls) {
+    var payload = calls.map(function (c) {
+      return { jsonrpc: "2.0", id: reqId++, method: c.method, params: c.params || [] };
+    });
+    return fetch(RPC_URL, {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload)
+    }).then(function (res) {
+      if (!res.ok) throw new Error("HTTP " + res.status + " from RPC");
+      return res.json();
+    }).then(function (list) {
+      var arr = Array.isArray(list) ? list : [list];
+      var byId = {};
+      arr.forEach(function (r) { byId[r.id] = r; });
+      return payload.map(function (p) {
+        var r = byId[p.id];
+        return (!r || r.error) ? null : r.result;
+      });
+    });
+  }
+
+  /* ══ Blockscout: a secondary, indexed evidence layer ═══════════════════
+     The RPC above stays canonical: every measurement and every intelligence
+     figure is derived from it, and nothing here can override those values.
+     This layer only adds indexed context that a node cannot cheaply answer
+     (decoded method names, lifetime counters, verified contract identity,
+     holder counts).
+
+     Public v2 API, no key, no paid plan, CORS is "*". The instance publishes
+     x-ratelimit-limit: 10, so every call here is (a) made only in response to
+     a user action — never on the 15s refresh path — and (b) cached. A failure
+     returns null and the UI simply omits the section: no fabricated values,
+     and the RPC-derived product is unaffected.
+     Override for testing with ?blockscout=<url>. */
+  var BS_URL     = params.get("blockscout") || "https://robinhoodchain.blockscout.com";
+  var BS_TIMEOUT = 7000;
+  var BS_TTL     = 120000;             // 2 minutes is plenty for indexed data
+  var bsCache    = {};                 // path -> { t, p } — also dedupes in-flight calls
+  var bsReachable = null;              // null = not tried yet, true/false = last outcome
+
+  function fetchBlockscout(path) {
+    var hit = bsCache[path];
+    if (hit && Date.now() - hit.t < BS_TTL) return hit.p;
+    var ctrl = window.AbortController ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, BS_TIMEOUT);
+    var p = fetch(BS_URL + "/api/v2" + path, ctrl ? { signal: ctrl.signal } : undefined)
+      .then(function (res) {
+        clearTimeout(timer);
+        if (!res.ok) throw new Error("HTTP " + res.status + " from Blockscout");
+        return res.json();
+      })
+      .then(function (j) { bsReachable = true; return j; })
+      .catch(function () {
+        clearTimeout(timer);
+        bsReachable = false;
+        delete bsCache[path];          // let a later attempt retry
+        return null;                   // null means "unavailable", never a guess
+      });
+    bsCache[path] = { t: Date.now(), p: p };
+    return p;
+  }
+
+  /* Deliberately NOT used: /addresses/{a}/transactions (~270KB) and
+     /smart-contracts/{a} (~49KB, whole verified source). The fields worth
+     showing are already in the small endpoints below. */
+  function getAddressEvidence(addr) {
+    return Promise.all([
+      fetchBlockscout("/addresses/" + addr),
+      fetchBlockscout("/addresses/" + addr + "/counters")
+    ]).then(function (r) {
+      var a = r[0], c = r[1], out = [];
+      if (a) {
+        out.push(["Type", a.is_contract
+          ? (a.is_verified ? "Verified contract" : "Contract, source not verified")
+          : "Account, no contract code"]);
+        if (a.name) out.push(["Indexed name", a.name]);
+        if (a.proxy_type && a.implementations && a.implementations.length) {
+          var im = a.implementations[0];
+          out.push(["Proxy", a.proxy_type + " → " + (im.name || shortAddr(im.address_hash || im.address))]);
+        }
+        if (a.creator_address_hash) out.push(["Deployed by", a.creator_address_hash]);
+        if (a.is_scam) out.push(["Explorer flag", "marked as scam"]);
+      }
+      if (c) {
+        if (c.transactions_count) out.push(["Transactions, all time", fmt(Number(c.transactions_count))]);
+        if (c.token_transfers_count) out.push(["Token transfers, all time", fmt(Number(c.token_transfers_count))]);
+      }
+      return out.length ? out : null;
+    });
+  }
+
+  /* contract-specific view of the same indexed record */
+  function getContractEvidence(addr) {
+    return fetchBlockscout("/addresses/" + addr).then(function (a) {
+      if (!a || !a.is_contract) return null;
+      var out = [["Source", a.is_verified ? "verified on the explorer" : "not verified"]];
+      if (a.name) out.push(["Contract name", a.name]);
+      if (a.proxy_type) out.push(["Proxy type", a.proxy_type]);
+      if (a.implementations && a.implementations.length) {
+        out.push(["Implementation", a.implementations[0].address_hash || a.implementations[0].address]);
+      }
+      if (a.creation_transaction_hash) out.push(["Created in", a.creation_transaction_hash]);
+      return out;
+    });
+  }
+
+  function getTransactionEvidence(hash) {
+    return fetchBlockscout("/transactions/" + hash).then(function (t) {
+      if (!t) return null;
+      var out = [];
+      if (t.status) out.push(["Status", t.status === "ok" ? "success" : String(t.status)]);
+      if (t.method) out.push(["Decoded method", t.method]);
+      if (t.block_number != null) out.push(["Block", fmt(t.block_number)]);
+      if (t.gas_used) out.push(["Gas used", fmt(Number(t.gas_used))]);
+      if (t.timestamp) out.push(["Timestamp", String(t.timestamp).replace("T", " ").replace(/\.\d+Z?$/, " UTC")]);
+      if (t.confirmations != null) out.push(["Confirmations", fmt(t.confirmations)]);
+      var tt = t.token_transfers || [];
+      if (tt.length) {
+        out.push(["Token transfers", fmt(tt.length) + " in this transaction"]);
+        var sym = tt[0].token && (tt[0].token.symbol || tt[0].token.name);
+        if (sym) out.push(["First transfer", String(sym)]);
+      }
+      return out.length ? out : null;
+    });
+  }
+
+  /* token identity plus the two things a node cannot give: holders and type */
+  function getTokenEvidence(addr) {
+    return fetchBlockscout("/tokens/" + addr).then(function (t) {
+      if (!t) return null;
+      var out = [];
+      if (t.type) out.push(["Standard", t.type]);
+      if (t.holders_count) out.push(["Holders, indexed", fmt(Number(t.holders_count))]);
+      if (t.total_supply && t.decimals != null) {
+        try {
+          var d = BigInt(10) ** BigInt(t.decimals);
+          out.push(["Total supply", (BigInt(t.total_supply) / d).toLocaleString("en-US")]);
+        } catch (e) { /* unreadable supply: omitted rather than guessed */ }
+      }
+      return out.length ? out : null;
+    });
+    /* price, market cap and 24h volume are present in this response and are
+       deliberately not read: they are off-chain market data, which this
+       product does not claim. */
+  }
+
+  /* recent indexed transfers for one token, summarised rather than listed */
+  function getTokenTransfers(addr) {
+    return fetchBlockscout("/tokens/" + addr + "/transfers").then(function (d) {
+      var items = d && d.items;
+      if (!items || !items.length) return null;
+      var methods = {};
+      items.forEach(function (i) { if (i.method) methods[i.method] = (methods[i.method] || 0) + 1; });
+      var top = Object.keys(methods).sort(function (a, b) { return methods[b] - methods[a]; })[0];
+      var out = [["Recent transfers sampled", fmt(items.length)]];
+      if (items[0].block_number) out.push(["Most recent in block", fmt(items[0].block_number)]);
+      if (top) out.push(["Most common method", top + " (" + methods[top] + " of " + items.length + ")"]);
+      return out;
+    });
+  }
+
+  /* pick the right indexed lookup from the shape of the identifier */
+  function getIndexedEvidence(q) {
+    q = String(q || "").trim();
+    if (/^0x[0-9a-fA-F]{64}$/.test(q)) return getTransactionEvidence(q);
+    if (/^0x[0-9a-fA-F]{40}$/.test(q)) {
+      /* the address record says whether this is a token, so the token endpoint
+         is only called when it will actually return something */
+      return fetchBlockscout("/addresses/" + q).then(function (a) {
+        var isToken = !!(a && a.token);
+        return Promise.all([
+          getAddressEvidence(q),
+          isToken ? getTokenEvidence(q) : Promise.resolve(null)
+        ]).then(function (r) {
+          if (!r[0] && !r[1]) return null;
+          return (r[0] || []).concat(r[1] || []);
+        });
+      });
+    }
+    return Promise.resolve(null);      // blocks are canonical from the RPC
+  }
+
+  /* ══ helpers ══════════════════════════════════════════════════════════ */
+  function hexNum(h) { return typeof h === "string" && h.indexOf("0x") === 0 ? parseInt(h, 16) : null; }
+  function toHex(n) { return "0x" + n.toString(16); }
+  function fmt(n) { return n == null ? "—" : n.toLocaleString("en-US"); }
+  function shortHash(h) { return h ? h.slice(0, 8) + "…" + h.slice(-6) : "—"; }
+  function shortAddr(a) { return a ? a.slice(0, 6) + "…" + a.slice(-4) : "—"; }
+  function utc(ts) { return ts == null ? "--:--:--" : new Date(ts * 1000).toISOString().slice(11, 19); }
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
+  }
+  function plural(n, one, many) { return n === 1 ? one : (many || one + "s"); }
+  /* this chain seals sub-second blocks, so cadence needs the extra decimal */
+  function fmtCad(c) { return c == null ? "—" : (c >= 1 ? c.toFixed(1) : c.toFixed(2)) + "s"; }
+  function dur(sec) {
+    if (sec == null) return "—";
+    if (sec < 60) return sec + "s";
+    var m = Math.floor(sec / 60), s = sec % 60;
+    return m + "m" + (s ? " " + s + "s" : "");
+  }
+  /* wei -> decimal string, 18 decimals, using BigInt so nothing is rounded away */
+  function weiToEth(hex) {
+    if (typeof hex !== "string") return null;
+    try {
+      var v = BigInt(hex), base = BigInt("1000000000000000000");
+      var whole = v / base, frac = v % base;
+      if (frac === BigInt(0)) return whole.toLocaleString("en-US");
+      var f = frac.toString().padStart(18, "0").slice(0, 6).replace(/0+$/, "");
+      return whole.toLocaleString("en-US") + (f ? "." + f : "");
+    } catch (e) { return null; }
+  }
+  function decodeAbiString(hex) {
+    if (!hex || hex === "0x") return null;
+    var body = hex.slice(2);
+    try {
+      if (body.length >= 128) {
+        var len = parseInt(body.slice(64, 128), 16);
+        if (len > 0 && len <= 256) {
+          var bytes = body.slice(128, 128 + len * 2), out = "";
+          for (var i = 0; i < bytes.length; i += 2) out += String.fromCharCode(parseInt(bytes.substr(i, 2), 16));
+          out = out.replace(/\u0000/g, "").trim();
+          if (out) return out;
+        }
+      }
+      var o = "";
+      for (var j = 0; j < body.length; j += 2) o += String.fromCharCode(parseInt(body.substr(j, 2), 16));
+      o = o.replace(/\u0000/g, "").trim();
+      return o || null;
+    } catch (e) { return null; }
+  }
+
+  /* ══ connection state ═════════════════════════════════════════════════ */
+  function setState(kind, detail) {
+    var map = {
+      loading: ["Reading", "quiet", "reading Robinhood Chain"],
+      live:    ["Live",    "live",  "connected to Robinhood Chain"],
+      error:   ["Unavailable", "watch", detail || "network data unavailable"]
+    };
+    var m = map[kind];
+    $("stateText").textContent = m[0];
+    $("connDetail").textContent = detail || m[2];
+    $("stateDot").className = "hp-dot " + m[1];
+    $("figDot").className = "hp-dot " + m[1];
+    $("figStatus").textContent = kind === "live" ? "Operational" : m[0];
+    $("nowNote").textContent = kind === "live" ? "watching" : m[0].toLowerCase();
+    $("connSrc").textContent = RPC_URL.replace(/^https?:\/\//, "");
+    /* the Discover live bar reads from the same pass — no extra calls */
+    $("dDot").className = "hp-dot " + m[1];
+    $("dState").textContent = kind === "error" ? "Unavailable" : m[0];
+    $("dStateNote").textContent = kind === "error"
+      ? "data connection unavailable" : (kind === "live" ? "connected to Robinhood Chain" : m[2]);
+  }
+
+  function showError(message) {
+    setState("error", message);
+    ["figBlock", "figTx", "figCadence"].forEach(function (id) { $(id).innerHTML = "&mdash;"; });
+    $("figBlockNote").textContent = "Unavailable";
+    $("figTxNote").textContent = "Unavailable";
+    $("figCadenceNote").textContent = "Unavailable";
+    $("sBlock").innerHTML = "&mdash;";
+    $("sCadence").innerHTML = "&mdash;";
+    ["mapBlock", "mapTx", "mapCadence", "mapAddr", "dBlock", "dActivity", "dCadence"].forEach(function (id) {
+      var el = $(id); if (el) el.textContent = "—";
+    });
+    $("dBlockNote").textContent = "unavailable";
+    $("dActivityNote").textContent = "unavailable";
+    $("dCadenceNote").textContent = "unavailable";
+    $("sourceNote").innerHTML = "Network data unavailable &middot; " + esc(message) +
+      ' <button class="hp-retry" id="retryBtn">Retry</button>';
+    var rb = $("retryBtn");
+    if (rb) rb.addEventListener("click", load);
+    SIGNALS = [];
+    renderCats();
+    $("feed").innerHTML = "";
+    $("feedState").hidden = false;
+    $("feedState").innerHTML = "<h4>Data connection unavailable.</h4><p>" + esc(message) +
+      "</p><p>Nothing is shown in its place. Discover stays empty until a read succeeds.</p>";
+    $("feedRange").innerHTML = "&mdash;";
+    $("tokenIndex").innerHTML = "";
+    $("tokenState").hidden = false;
+    $("tokenRange").innerHTML = "&mdash;";
+    $("tokenState").innerHTML = "<h4>Unavailable.</h4><p>Token data needs a successful chain read.</p>";
+    $("activityStream").innerHTML = "";
+    $("activityState").hidden = false;
+    $("activityState").innerHTML = "<h4>Unavailable.</h4><p>" + esc(message) + "</p>";
+    $("activityRange").innerHTML = "&mdash;";
+  }
+
+  /* ══════════════════════════════════════════════════════════════════════
+     INTELLIGENCE — fixed rules over real counts. Nothing is invented:
+     every figure below is read from the blocks in the current window.
+     ══════════════════════════════════════════════════════════════════════ */
+  var SIGNALS = [];
+  var CATS = ["all", "rising", "emerging", "notable"];
+  var currentCat = "all";
+
+  /* the previous pass, kept in memory so "what changed" can be measured without
+     a single extra RPC call. Only used when the two windows do not overlap. */
+  var prevWindow = null;
+
+  function deriveSignals(blocks, head, cadence) {
+    var sigs = [], txs = [], addrs = {}, toCount = {}, creations = [];
+    var maxTx = null, maxVal = null, gasTotal = 0;
+
+    blocks.forEach(function (blk) {
+      var n = hexNum(blk.number), ts = hexNum(blk.timestamp);
+      var g = hexNum(blk.gasUsed); if (g != null) gasTotal += g;
+      var list = Array.isArray(blk.transactions) ? blk.transactions : [];
+      list.forEach(function (tx) {
+        if (!tx || typeof tx !== "object") return;
+        txs.push({ tx: tx, n: n, ts: ts });
+        if (tx.from) addrs[String(tx.from).toLowerCase()] = 1;
+        if (tx.to) {
+          var t = String(tx.to).toLowerCase();
+          addrs[t] = 1;
+          toCount[t] = (toCount[t] || 0) + 1;
+        } else {
+          creations.push({ tx: tx, n: n });
+        }
+        try {
+          var v = BigInt(tx.value || "0x0");
+          if (maxVal == null || v > maxVal) { maxVal = v; maxTx = { tx: tx, n: n }; }
+        } catch (e) { /* unreadable value: skipped, not guessed */ }
+      });
+    });
+
+    var uniq = Object.keys(addrs).length;
+    var nb = blocks.length;
+    var firstN = hexNum(blocks[0].number), lastN = hexNum(blocks[nb - 1].number);
+    var t0 = hexNum(blocks[0].timestamp), t1 = hexNum(blocks[nb - 1].timestamp);
+    var span = (t0 != null && t1 != null && t1 >= t0) ? (t1 - t0) : null;
+    var range = "Blocks " + fmt(firstN) + "–" + fmt(lastN);
+    var baseEv = [
+      ["Interactions", fmt(txs.length)],
+      ["Unique addresses", fmt(uniq)],
+      ["Blocks observed", fmt(nb)],
+      ["Time window", dur(span)]
+    ];
+    /* the observation block every card shares: what was looked at, exactly */
+    var baseObs = [
+      ["Observation window", range],
+      ["Blocks observed", fmt(nb)],
+      ["Transactions observed", fmt(txs.length)],
+      ["Unique addresses", fmt(uniq)],
+      ["Elapsed chain time", dur(span)]
+    ];
+    var headObj = { kind: "Block", value: "#" + fmt(lastN), q: String(lastN) };
+
+    /* ── change against the previous pass, only when the windows are disjoint ── */
+    var prev = null;
+    if (prevWindow && prevWindow.nb === nb && prevWindow.lastN < firstN) {
+      var fresh = 0;
+      Object.keys(addrs).forEach(function (a) { if (!prevWindow.addrs[a]) fresh++; });
+      prev = {
+        interactions: prevWindow.interactions,
+        uniq: prevWindow.uniq,
+        range: prevWindow.range,
+        delta: txs.length - prevWindow.interactions,
+        freshAddrs: fresh
+      };
+    }
+
+    /* ── 1. activity trend: recent half of the window vs the earlier half ── */
+    if (txs.length > 0) {
+      var half = Math.ceil(nb / 2);
+      var recent = blocks.slice(nb - half), earlier = blocks.slice(0, nb - half);
+      var cnt = function (list) {
+        return list.reduce(function (s, b) {
+          return s + (Array.isArray(b.transactions) ? b.transactions.length : 0);
+        }, 0);
+      };
+      var rC = cnt(recent), eC = cnt(earlier);
+      var rRate = recent.length ? rC / recent.length : 0;
+      var eRate = earlier.length ? eC / earlier.length : 0;
+      var ratio = eRate > 0 ? rRate / eRate : (rRate > 0 ? Infinity : 1);
+      var r1 = rRate.toFixed(1), e1 = eRate.toFixed(1);
+      var trend;
+
+      if (ratio >= 1.4) {
+        trend = {
+          cat: "Rising", group: "rising", rank: 0, title: "Activity is rising",
+          body: "Robinhood Chain is carrying " + r1 + " " + plural(rC, "transaction") + " per block across the " +
+            "last " + recent.length + " " + plural(recent.length, "block") + ", against " + e1 + " per block in the " +
+            earlier.length + " before them. " + fmt(txs.length) + " " + plural(txs.length, "interaction") +
+            " in total, from " + fmt(uniq) + " distinct " + plural(uniq, "address", "addresses") + ".",
+          why: "The rate of transactions per block in the most recent half of the window is at least 1.4× the " +
+            "rate in the earlier half. Both halves are counted from the same read, so the comparison is not " +
+            "affected by how fast blocks are being produced."
+        };
+      } else if (ratio <= 0.65) {
+        trend = {
+          cat: "Notable", group: "notable", rank: 2, title: "Activity is easing",
+          body: "The last " + recent.length + " " + plural(recent.length, "block") + " carried " + r1 +
+            " " + plural(rC, "transaction") + " per block, down from " + e1 + " across the " + earlier.length +
+            " before them. " + fmt(txs.length) + " " + plural(txs.length, "interaction") + " in the window, " +
+            "from " + fmt(uniq) + " distinct " + plural(uniq, "address", "addresses") + ".",
+          why: "Transactions per block in the recent half of the window fell to 0.65× the earlier half or below. " +
+            "A quiet window is reported as a quiet window."
+        };
+      } else {
+        trend = {
+          cat: "Activity", group: "activity", rank: 6, title: "Activity is holding steady",
+          body: fmt(txs.length) + " " + plural(txs.length, "interaction") + " across " + nb + " " +
+            plural(nb, "block") + " — " + r1 + " per block recently against " + e1 + " before, which is not a " +
+            "wide enough gap to call a trend either way. " + fmt(uniq) + " distinct " +
+            plural(uniq, "address", "addresses") + " took part.",
+          why: "The two halves of the window are within 1.4× and 0.65× of each other, so neither a rise " +
+            "nor a fall can be claimed from this read."
+        };
+      }
+      trend.ev = baseEv;
+      trend.obs = baseObs.concat([
+        ["Recent half", recent.length + " " + plural(recent.length, "block") + ", " + rC + " " +
+          plural(rC, "transaction") + " (" + r1 + " per block)"],
+        ["Earlier half", earlier.length + " " + plural(earlier.length, "block") + ", " + eC + " " +
+          plural(eC, "transaction") + " (" + e1 + " per block)"]
+      ]);
+      if (prev) {
+        trend.obs = trend.obs.concat([
+          ["Previous window", prev.range + ", " + fmt(prev.interactions) + " " +
+            plural(prev.interactions, "transaction")],
+          ["Change since then", (prev.delta > 0 ? "+" : "") + fmt(prev.delta) + " " +
+            plural(Math.abs(prev.delta), "transaction")]
+        ]);
+      }
+      /* the busiest block in the window is the most useful thing to open first */
+      var busiest = null;
+      blocks.forEach(function (b) {
+        var c = Array.isArray(b.transactions) ? b.transactions.length : 0;
+        if (!busiest || c > busiest.c) busiest = { c: c, n: hexNum(b.number) };
+      });
+      trend.links = [headObj];
+      if (busiest && busiest.n !== lastN) {
+        trend.links.push({ kind: "Busiest block", value: "#" + fmt(busiest.n) + " · " + busiest.c +
+          " " + plural(busiest.c, "transaction"), q: String(busiest.n) });
+      }
+      if (txs.length) {
+        var sample = txs[txs.length - 1];
+        trend.links.push({ kind: "Latest transaction", value: sample.tx.hash, q: sample.tx.hash });
+      }
+      trend.primary = headObj;
+      sigs.push(trend);
+    }
+
+    /* ── 2. emerging: contract deployments (no `to` address) ── */
+    if (creations.length) {
+      var c0 = creations[0];
+      sigs.push({
+        cat: "Emerging", group: "emerging", rank: 1,
+        title: creations.length === 1 ? "A new contract was deployed" : fmt(creations.length) + " new contracts were deployed",
+        body: (creations.length === 1
+          ? "A contract creation transaction from " + shortAddr(c0.tx.from) + " landed in block " + fmt(c0.n) + "."
+          : fmt(creations.length) + " contract creation transactions landed in this window, the first from " +
+            shortAddr(c0.tx.from) + " in block " + fmt(c0.n) + ".") +
+          " New code is arriving on the network.",
+        why: "A transaction with no recipient address is a contract deployment. These were counted directly from " +
+          "the transaction bodies in the blocks read — no receipt guessing, no name assumed.",
+        ev: [
+          ["Deployments", fmt(creations.length)],
+          ["Blocks observed", fmt(nb)],
+          ["First seen in", "Block " + fmt(c0.n)],
+          ["Time window", dur(span)]
+        ],
+        obs: baseObs.concat([
+          ["Contract deployments", fmt(creations.length)],
+          ["First deployment in", "Block " + fmt(c0.n)]
+        ]),
+        links: creations.slice(0, 3).map(function (c) {
+          return { kind: "Deployment tx", value: c.tx.hash, q: c.tx.hash };
+        }).concat([
+          { kind: "Deployer", value: c0.tx.from, q: c0.tx.from },
+          { kind: "Block", value: "#" + fmt(c0.n), q: String(c0.n) }
+        ]),
+        primary: { kind: "Deployment tx", value: c0.tx.hash, q: c0.tx.hash }
+      });
+    }
+
+    /* ── 3. concentration: one address receiving a repeated share ── */
+    var top = null;
+    Object.keys(toCount).forEach(function (a) {
+      if (!top || toCount[a] > top.n) top = { a: a, n: toCount[a] };
+    });
+    if (top && top.n >= 3 && txs.length > 0) {
+      var share = Math.round((top.n / txs.length) * 100);
+      /* real examples of the traffic this address received, for verification */
+      var topTxs = txs.filter(function (t) {
+        return t.tx.to && String(t.tx.to).toLowerCase() === top.a;
+      }).slice(0, 2);
+      sigs.push({
+        cat: "Notable", group: "notable", rank: 3,
+        title: "One address is drawing repeat interaction",
+        body: shortAddr(top.a) + " received " + fmt(top.n) + " of the " + fmt(txs.length) + " " +
+          plural(txs.length, "transaction") + " in this window — " + share + "% of everything read. " +
+          "Whether that address holds contract code is a lookup away.",
+        why: "Recipient addresses were tallied across every transaction in the window. This one appeared at " +
+          "least three times. Hood Powl does not assume what the address is — open the evidence and the " +
+          "node answers for itself.",
+        ev: [
+          ["Interactions received", fmt(top.n)],
+          ["Share of window", share + "%"],
+          ["Blocks observed", fmt(nb)],
+          ["Time window", dur(span)]
+        ],
+        obs: baseObs.concat([
+          ["Interactions received", fmt(top.n)],
+          ["Share of window", share + "%"]
+        ]),
+        links: [
+          { kind: "Address", value: top.a, q: top.a },
+          headObj
+        ].concat(topTxs.map(function (t) {
+          return { kind: "Transaction", value: t.tx.hash, q: t.tx.hash };
+        })),
+        primary: { kind: "Address", value: top.a, q: top.a }
+      });
+    }
+
+    /* ── 4. notable: the largest transaction value in the window ── */
+    if (maxTx && maxVal != null) {
+      var val = weiToEth(maxTx.tx.value);
+      if (val && maxVal > BigInt(0)) {
+        sigs.push({
+          cat: "Notable", group: "notable", rank: 4,
+          title: "A large transfer moved through the window",
+          body: "The largest single transaction value in these " + nb + " " + plural(nb, "block") + " was " +
+            val + " in native value, sent by " + shortAddr(maxTx.tx.from) +
+            (maxTx.tx.to ? " to " + shortAddr(maxTx.tx.to) : " as a contract deployment") +
+            " in block " + fmt(maxTx.n) + ".",
+          why: "Every transaction value in the window was compared in wei using exact integer arithmetic, then " +
+            "converted for display. No rounding decided the winner.",
+          ev: [
+            ["Value", val],
+            ["Block", fmt(maxTx.n)],
+            ["Interactions", fmt(txs.length)],
+            ["Time window", dur(span)]
+          ],
+          obs: baseObs.concat([
+            ["Largest value", val],
+            ["Found in", "Block " + fmt(maxTx.n)],
+            ["Gas limit", fmt(hexNum(maxTx.tx.gas))]
+          ]),
+          links: [
+            { kind: "Transaction", value: maxTx.tx.hash, q: maxTx.tx.hash },
+            { kind: "Sender", value: maxTx.tx.from, q: maxTx.tx.from }
+          ].concat(maxTx.tx.to ? [{ kind: "Recipient", value: maxTx.tx.to, q: maxTx.tx.to }] : [])
+           .concat([{ kind: "Block", value: "#" + fmt(maxTx.n), q: String(maxTx.n) }]),
+          primary: { kind: "Transaction", value: maxTx.tx.hash, q: maxTx.tx.hash }
+        });
+      }
+    }
+
+    /* ── 5. network: cadence and the head of the chain ── */
+    var headTs = hexNum(blocks[nb - 1].timestamp);
+    sigs.push({
+      cat: "Network", group: "network", rank: 7,
+      title: cadence == null ? "The chain is at block " + fmt(head) : "Blocks are landing every " + fmtCad(cadence),
+      body: (cadence == null
+        ? "Block " + fmt(head) + " is the head of the chain as this node reports it."
+        : "Robinhood Chain is sealing a block every " + fmtCad(cadence) + ", measured across the " +
+          CADENCE_SPAN + " headers before block " + fmt(head) + ".") +
+        " The window read here covers " + range.toLowerCase() + ", spanning " + dur(span) + ", and burned " +
+        fmt(gasTotal) + " gas.",
+      why: "Cadence is the timestamp difference between the head block and the header " + CADENCE_SPAN +
+        " blocks earlier, divided by " + CADENCE_SPAN + ". Gas is summed from the same block headers. Both come " +
+        "from the node, not from an estimate.",
+      ev: [
+        ["Cadence", fmtCad(cadence)],
+        ["Head block", fmt(head)],
+        ["Blocks observed", fmt(nb)],
+        ["Gas used", fmt(gasTotal)]
+      ],
+      obs: baseObs.concat([
+        ["Head block", fmt(head)],
+        ["Sealed", headTs == null ? "—" : utc(headTs) + " UTC"],
+        ["Cadence measured across", CADENCE_SPAN + " headers"],
+        ["Gas used in window", fmt(gasTotal)]
+      ]),
+      links: [headObj, { kind: "Cadence reference", value: "#" + fmt(Math.max(0, head - CADENCE_SPAN)),
+        q: String(Math.max(0, head - CADENCE_SPAN)) }],
+      primary: headObj
+    });
+
+    /* ── 6. addresses that were not in the previous window ── */
+    if (prev && prev.freshAddrs >= 5) {
+      sigs.push({
+        cat: "Emerging", group: "emerging", rank: 2,
+        title: fmt(prev.freshAddrs) + " addresses appear that were not in the previous window",
+        body: "Of the " + fmt(uniq) + " " + plural(uniq, "address", "addresses") + " active in " +
+          range.toLowerCase() + ", " + fmt(prev.freshAddrs) + " did not appear in the previous window (" +
+          prev.range.toLowerCase() + "). Participation is turning over rather than repeating.",
+        why: "The address set from the previous pass is held in memory and compared with this one. The two " +
+          "windows do not overlap, so no address is counted twice. This says nothing about whether these " +
+          "addresses are new to the chain — only that they were absent from the window read before this one.",
+        ev: [
+          ["Not in previous", fmt(prev.freshAddrs)],
+          ["Active addresses", fmt(uniq)],
+          ["Previous window", fmt(prev.uniq)],
+          ["Blocks observed", fmt(nb)]
+        ],
+        obs: baseObs.concat([
+          ["Previous window", prev.range],
+          ["Addresses then", fmt(prev.uniq)],
+          ["Addresses now", fmt(uniq)],
+          ["Absent from previous", fmt(prev.freshAddrs)]
+        ]),
+        links: [headObj],
+        primary: headObj
+      });
+    }
+
+    /* remember this pass for the next comparison */
+    prevWindow = { nb: nb, lastN: lastN, firstN: firstN, interactions: txs.length,
+                   uniq: uniq, range: range, addrs: addrs };
+
+    return { sigs: sigs, range: range, interactions: txs.length, uniq: uniq, blocks: nb, span: span };
+  }
+
+  /* ══ rendering: the intelligence card ═════════════════════════════════ */
+  var ARROW = '<svg width="11" height="9" viewBox="0 0 11 9" fill="none" aria-hidden="true">' +
+    '<path d="M0 4.5h9M6 1l3.4 3.5L6 8" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" ' +
+    'stroke-linejoin="round"></path></svg>';
+  var GLYPH = '<svg class="hp-glyph" width="34" height="24" viewBox="0 0 34 24" fill="none" aria-hidden="true">' +
+    '<rect x="0.5" y="0.5" width="19" height="12" rx="1.5" stroke="currentColor"></rect>' +
+    '<path d="M10 12.5V19h13" stroke="currentColor"></path>' +
+    '<rect x="24" y="16" width="9" height="7" rx="1" stroke="currentColor"></rect>' +
+    '<circle cx="10" cy="19" r="1.6" fill="currentColor"></circle></svg>';
+
+  /* the indexer answers for addresses and transactions; block data is already
+     canonical from the RPC, so a block-only card gets no indexed section at all
+     rather than a misleading "unavailable" */
+  function bsEnrichable(q) {
+    return /^0x[0-9a-fA-F]{40}$/.test(q || "") || /^0x[0-9a-fA-F]{64}$/.test(q || "");
+  }
+  function bsTarget(s) {
+    if (s.primary && bsEnrichable(s.primary.q)) return s.primary.q;
+    var l = (s.links || []).filter(function (x) { return x && bsEnrichable(x.q); })[0];
+    return l ? l.q : null;
+  }
+
+  /* a signal keeps its identity across refreshes, so an open evidence panel
+     stays open and a card the reader has already seen does not re-animate */
+  var expanded = {}, seen = {};
+  function sigKey(s) { return (s.cat + "|" + s.title).replace(/"/g, ""); }
+
+  function cardHTML(s, i, lead) {
+    var key = sigKey(s), open = !!expanded[key], fresh = !seen[key];
+    seen[key] = 1;
+    var ev = (s.ev || []).map(function (e) {
+      return '<li><span class="v">' + esc(e[1]) + '</span><span class="l">' + esc(e[0]) + '</span></li>';
+    }).join("");
+    /* OBSERVATION — what was looked at, as measured */
+    var rows = (s.obs || []).map(function (r) {
+      return '<div class="hp-ev-row"><span class="k">' + esc(r[0]) + '</span>' +
+        '<span class="v hp-mono">' + esc(r[1]) + '</span></div>';
+    }).join("");
+    /* EVIDENCE — real objects, each one a live lookup against the node */
+    var objs = (s.links || []).filter(function (t) { return t && t.q; }).map(function (t) {
+      return '<button class="hp-obj" data-q="' + esc(t.q) + '">' +
+        '<span class="k">' + esc(t.kind) + "</span>" +
+        '<span class="v">' + esc(t.value) + "</span>" +
+        '<span class="go">' + ARROW + "</span></button>";
+    }).join("");
+    var primary = s.primary && s.primary.q
+      ? '<button class="hp-primary" data-q="' + esc(s.primary.q) + '">View on network ' + ARROW + "</button>"
+      : "";
+
+    return '<article class="hp-card' + (fresh ? " hp-card-in" : "") + (lead ? " lead" : "") +
+      '" data-cat="' + esc(s.group) + '" data-key="' + esc(key) + '"' +
+      (bsTarget(s) ? ' data-bs="' + esc(bsTarget(s)) + '"' : "") +
+      (fresh ? ' style="animation-delay:' + Math.min(i * 60, 300) + 'ms"' : "") + ">" +
+      '<div class="hp-card-top"><span class="hp-tag">' + esc(s.cat) + "</span>" + GLYPH + "</div>" +
+      '<h3 class="hp-card-h">' + esc(s.title) + "</h3>" +
+      '<p class="hp-card-p">' + esc(s.body) + "</p>" +
+      '<ul class="hp-ev">' + ev + "</ul>" +
+      '<button class="hp-ev-btn" aria-expanded="' + (open ? "true" : "false") + '">' +
+      (open ? "Hide evidence " : "View evidence ") + ARROW + "</button>" +
+      '<div class="hp-ev-panel"' + (open ? "" : " hidden") + ">" +
+      '<span class="hp-why">Why this signal appeared</span>' +
+      "<p>" + esc(s.why) + "</p>" +
+      '<span class="hp-ev-sub">Observation</span>' +
+      '<div class="hp-ev-rows">' + rows + "</div>" +
+      (objs ? '<span class="hp-ev-sub">Evidence</span>' + objs : "") +
+      (bsTarget(s) ? '<div class="hp-bs-slot"></div>' : "") +
+      primary +
+      "</div></article>";
+  }
+
+  /* four fixed filters, always in the same order, each showing its real count.
+     Categories outside this set (network, activity) stay visible under All.
+     The chips are only rebuilt when the counts actually change — selecting a
+     filter just moves the active class, so the button keeps keyboard focus. */
+  var lastCatsHTML = "";
+  function renderCats() {
+    var counts = {};
+    SIGNALS.forEach(function (s) { counts[s.group] = (counts[s.group] || 0) + 1; });
+    var html = CATS.map(function (c) {
+      var n = c === "all" ? SIGNALS.length : (counts[c] || 0);
+      return '<button class="hp-cat' + (n ? "" : " empty") + '" data-cat="' + c + '">' +
+        (c === "all" ? "All" : c) + '<span class="ct">' + n + "</span></button>";
+    }).join("");
+    if (html !== lastCatsHTML) { $("cats").innerHTML = html; lastCatsHTML = html; }
+    markActiveCat();
+  }
+  function markActiveCat() {
+    [].forEach.call($("cats").children, function (b) {
+      b.classList.toggle("on", b.getAttribute("data-cat") === currentCat);
+    });
+  }
+
+  function renderFeed() {
+    /* strongest signal leads: a real trend outranks a quiet one, and the
+       standing network reading always sits last */
+    SIGNALS.sort(function (a, b) { return (a.rank == null ? 9 : a.rank) - (b.rank == null ? 9 : b.rank); });
+    var list = SIGNALS.filter(function (s) { return currentCat === "all" || s.group === currentCat; });
+    $("feed").innerHTML = list.map(function (s, i) { return cardHTML(s, i, i === 0); }).join("");
+    /* a panel left open across a refresh keeps its indexed context — served
+       from cache, so this costs no request */
+    [].forEach.call($("feed").querySelectorAll(".hp-card"), function (card) {
+      if (expanded[card.getAttribute("data-key")]) enrichCard(card);
+    });
+    var st = $("feedState");
+    st.hidden = list.length > 0;
+    if (!list.length && SIGNALS.length) {
+      st.innerHTML = "<h4>Not enough activity to establish a meaningful signal yet.</h4>" +
+        "<p>No " + esc(currentCat) + " signal could be derived from the blocks just read. " +
+        "The other categories still have signals — or wait for the next pass.</p>";
+    }
+    renderCats();
+  }
+
+  /* indexed context, fetched the first time a panel is opened and never on
+     the refresh path. Cached, so a re-render costs nothing. */
+  function indexedRows(rows) {
+    return '<span class="hp-ev-sub">Indexed context <i class="hp-bs-src">Blockscout</i></span>' +
+      '<div class="hp-ev-rows">' + rows.map(function (r) {
+        return '<div class="hp-ev-row"><span class="k">' + esc(r[0]) + '</span>' +
+          '<span class="v hp-mono">' + esc(r[1]) + "</span></div>";
+      }).join("") + "</div>";
+  }
+  function enrichCard(card) {
+    var slot = card.querySelector(".hp-bs-slot");
+    var q = card.getAttribute("data-bs");
+    if (!slot || !q || slot.getAttribute("data-state")) return;
+    slot.setAttribute("data-state", "loading");
+    slot.innerHTML = '<span class="hp-ev-sub">Indexed context <i class="hp-bs-src">reading</i></span>';
+    getIndexedEvidence(q).then(function (rows) {
+      if (!rows) {
+        slot.setAttribute("data-state", "none");
+        slot.innerHTML = '<span class="hp-ev-sub">Indexed context ' +
+          '<i class="hp-bs-src">unavailable</i></span>' +
+          '<p class="hp-bs-note">The indexer did not answer. Everything above is read ' +
+          'directly from the chain and is unaffected.</p>';
+        return;
+      }
+      slot.setAttribute("data-state", "done");
+      slot.innerHTML = indexedRows(rows);
+    });
+  }
+
+  /* evidence + trace, by delegation */
+  $("feed").addEventListener("click", function (e) {
+    var btn = e.target.closest ? e.target.closest(".hp-ev-btn") : null;
+    if (btn) {
+      var card = btn.closest(".hp-card");
+      var panel = card ? card.querySelector(".hp-ev-panel") : null;
+      var open = btn.getAttribute("aria-expanded") === "true";
+      btn.setAttribute("aria-expanded", open ? "false" : "true");
+      btn.innerHTML = (open ? "View evidence " : "Hide evidence ") + ARROW;
+      if (panel) panel.hidden = open;
+      /* remembered, so the next refresh does not close it under the reader */
+      if (card) expanded[card.getAttribute("data-key")] = !open;
+      if (card && !open) enrichCard(card);       // opening: pull indexed context once
+      return;
+    }
+    /* every evidence object and the primary action open a live node lookup */
+    var obj = e.target.closest ? e.target.closest(".hp-obj,.hp-primary,.hp-trace") : null;
+    if (obj && obj.getAttribute("data-q")) {
+      openSearch(obj.getAttribute("data-q"));
+    }
+  });
+
+  $("cats").addEventListener("click", function (e) {
+    var b = e.target.closest ? e.target.closest(".hp-cat") : null;
+    if (!b) return;
+    currentCat = b.getAttribute("data-cat");
+    markActiveCat();
+    renderFeed();
+  });
+
+  /* ══ rendering: the record + assets ═══════════════════════════════════ */
+  function signalRow(o) {
+    return '<article class="hp-sig' + (o.fresh ? " fresh" : "") + '">' +
+      '<div class="hp-sig-gut"><span class="hp-sig-node"></span>' +
+      '<span class="hp-sig-time">' + esc(o.time) + '</span><span class="hp-sig-utc">UTC</span></div>' +
+      '<div class="hp-sig-body">' +
+      '<div class="hp-sig-kind"><span class="hp-dot ' + o.dot + '"></span>' + esc(o.kind) + "</div>" +
+      '<p class="hp-sig-say">' + esc(o.say) + "</p>" +
+      '<div class="hp-sig-foot">' +
+      (o.q ? '<button class="e hp-mono hp-elink" data-q="' + esc(o.q) + '">' + esc(o.entity) + "</button>"
+           : '<span class="e hp-mono">' + esc(o.entity) + "</span>") +
+      (o.value ? '<span class="hp-mono">' + esc(o.value) + "</span>" : "") +
+      (o.extra ? '<span class="hp-mono">' + esc(o.extra) + "</span>" : "") +
+      "</div></div></article>";
+  }
+
+  function tokenRow(t, i) {
+    return '<button class="hp-row" data-q="' + esc(t.address) + '">' +
+      '<span class="hp-rank">' + String(i + 1).padStart(2, "0") + "</span>" +
+      '<span class="hp-row-b"><span class="hp-subj">' + esc(t.symbol || shortAddr(t.address)) +
+      '<span class="nm">' + esc(t.name || "Name not published on-chain") + "</span></span>" +
+      '<span class="hp-meta">' +
+      "<span>Decimals <b>" + (t.decimals == null ? "&mdash;" : t.decimals) + "</b></span>" +
+      "<span>Holders <b>not indexed</b></span>" +
+      '<span class="hp-mono" style="letter-spacing:.04em;text-transform:none">' + esc(shortAddr(t.address)) + "</span>" +
+      "</span></span>" +
+      '<span class="hp-fig-r"><span class="p">' + t.transfers + "</span>" +
+      '<span class="c">transfers seen</span></span></button>';
+  }
+
+  $("tokenIndex").addEventListener("click", function (e) {
+    var r = e.target.closest ? e.target.closest(".hp-row") : null;
+    if (r && r.getAttribute("data-q")) openSearch(r.getAttribute("data-q"));
+  });
+
+  /* every identifier in the record is a live lookup */
+  $("activityStream").addEventListener("click", function (e) {
+    var b = e.target.closest ? e.target.closest(".hp-elink") : null;
+    if (b && b.getAttribute("data-q")) openSearch(b.getAttribute("data-q"));
+  });
+
+  /* ══ the load ═════════════════════════════════════════════════════════ */
+  var loading = false;
+  function load() {
+    if (loading) return;
+    loading = true;
+    setState("loading");
+
+    var chainId = null, head = null, headBlock = null, reportedCount = null, cadence = null, blocks = [];
+
+    Promise.resolve()
+      .then(function () { return rpc("eth_chainId"); })
+      .then(function (h) {
+        chainId = hexNum(h);
+        $("sChain").textContent = chainId == null ? "—" : chainId;
+        $("figChain").textContent = chainId == null
+          ? "Chain " + CHAIN_ID + " expected"
+          : "Chain " + chainId + (chainId === CHAIN_ID ? " · verified" : " · unexpected");
+        return rpc("eth_blockNumber");
+      })
+      .then(function (h) {
+        head = hexNum(h);
+        if (head == null) throw new Error("eth_blockNumber returned no usable value");
+        /* head block with full transactions, the dedicated tx count, and a
+           header 20 blocks back for the cadence measurement */
+        return rpcBatch([
+          { method: "eth_getBlockByNumber", params: [toHex(head), true] },
+          { method: "eth_getBlockTransactionCountByNumber", params: [toHex(head)] },
+          { method: "eth_getBlockByNumber", params: [toHex(Math.max(0, head - CADENCE_SPAN)), false] }
+        ]);
+      })
+      .then(function (r) {
+        headBlock = r[0];
+        reportedCount = hexNum(r[1]);
+        var older = r[2];
+        if (!headBlock) throw new Error("eth_getBlockByNumber(" + head + ") returned nothing");
+
+        var ts = hexNum(headBlock.timestamp);
+        var ots = older ? hexNum(older.timestamp) : null;
+        if (ts != null && ots != null && ts > ots && head > CADENCE_SPAN) cadence = (ts - ots) / CADENCE_SPAN;
+
+        var headerCount = Array.isArray(headBlock.transactions) ? headBlock.transactions.length : null;
+        var count = reportedCount != null ? reportedCount : headerCount;
+
+        $("figBlock").textContent = fmt(head);
+        $("sBlock").textContent = fmt(head);
+        $("mapBlock").textContent = fmt(head);
+        $("dBlock").textContent = fmt(head);
+        $("dBlockNote").textContent = ts == null ? "timestamp unavailable" : "sealed " + utc(ts) + " UTC";
+        $("figBlockNote").textContent = ts == null ? "Timestamp unavailable" : "Sealed " + utc(ts) + " UTC";
+        $("figTx").textContent = count == null ? "—" : fmt(count);
+        $("figTxNote").textContent = count == null ? "Unavailable"
+          : (reportedCount != null ? "eth_getBlockTransactionCountByNumber" : "counted from the block header");
+        $("figCadence").textContent = fmtCad(cadence);
+        $("sCadence").textContent = fmtCad(cadence);
+        $("mapCadence").textContent = fmtCad(cadence);
+        $("dCadence").textContent = fmtCad(cadence);
+        $("dCadenceNote").textContent = cadence == null
+          ? "not measurable yet" : "measured across " + CADENCE_SPAN + " headers";
+        $("figCadenceNote").textContent = cadence == null
+          ? "Not measurable yet" : "Observed across " + CADENCE_SPAN + " blocks";
+
+        /* the window: the head plus the preceding blocks, full transactions */
+        var calls = [];
+        for (var i = WINDOW - 1; i >= 1; i--) {
+          if (head - i >= 0) calls.push({ method: "eth_getBlockByNumber", params: [toHex(head - i), true] });
+        }
+        return calls.length ? rpcBatch(calls) : [];
+      })
+      .then(function (older) {
+        blocks = older.filter(Boolean).concat([headBlock]);
+
+        /* ── intelligence: derived from the window just read ── */
+        var d = deriveSignals(blocks, head, cadence);
+        SIGNALS = d.sigs;
+        currentCat = SIGNALS.some(function (s) { return s.group === currentCat; }) ? currentCat : "all";
+        renderFeed();
+        $("feedRange").textContent = d.range;
+        $("mapTx").textContent = fmt(d.interactions);
+        $("mapAddr").textContent = fmt(d.uniq);
+        $("dActivity").textContent = fmt(d.interactions);
+        $("dActivityNote").textContent = fmt(d.uniq) + " " + plural(d.uniq, "address", "addresses") +
+          " across " + fmt(d.blocks) + " " + plural(d.blocks, "block");
+        if (!SIGNALS.length) {
+          $("feedState").innerHTML = "<h4>Not enough activity to establish a meaningful signal yet.</h4>" +
+            "<p>" + d.range + " contained no transactions, so there is nothing to report. " +
+            "New signals appear as blocks land.</p>";
+          $("feedState").hidden = false;
+        }
+
+        /* ── the record: newest block first, with a sample of each block's
+              transactions so the whole window is represented rather than the
+              head block swallowing the row budget ── */
+        var rows = [], MAX_ROWS = 90, PER_BLOCK = 3;
+        for (var b = blocks.length - 1; b >= 0; b--) {
+          var blk = blocks[b];
+          var n = hexNum(blk.number), ts = hexNum(blk.timestamp);
+          var txs = Array.isArray(blk.transactions) ? blk.transactions : [];
+          rows.push({
+            group: "network", dot: "quiet", kind: "Network", time: utc(ts),
+            say: "Block " + fmt(n) + " landed with " + txs.length + " transaction" + (txs.length === 1 ? "" : "s") + ".",
+            entity: "Block " + fmt(n), q: String(n),
+            value: blk.gasUsed ? "gas used " + fmt(hexNum(blk.gasUsed)) : null,
+            fresh: b === blocks.length - 1
+          });
+          for (var t = 0; t < txs.length && t < PER_BLOCK && rows.length < MAX_ROWS; t++) {
+            var tx = txs[t];
+            if (typeof tx !== "object") continue;
+            var creation = tx.to == null;
+            var eth = weiToEth(tx.value);
+            rows.push({
+              group: creation ? "contract" : "transaction",
+              dot: creation ? "live" : "quiet",
+              kind: creation ? "New contract" : "Transaction",
+              time: utc(ts),
+              say: creation
+                ? "A contract creation transaction was sent by " + shortAddr(tx.from) + " in block " + fmt(n) + "."
+                : shortAddr(tx.from) + " sent a transaction to " + shortAddr(tx.to) + " in block " + fmt(n) + ".",
+              entity: shortHash(tx.hash), q: tx.hash,
+              value: eth != null ? eth + " (value)" : null,
+              extra: tx.gas ? "gas " + fmt(hexNum(tx.gas)) : null
+            });
+          }
+        }
+
+        $("activityStream").innerHTML = rows.map(signalRow).join("");
+        $("activityState").hidden = rows.length > 0;
+        if (!rows.length) {
+          $("activityState").innerHTML = "<h4>Nothing read yet.</h4><p>The blocks in this window are empty.</p>";
+        }
+        $("activityRange").textContent = d.range;
+
+        /* ── tokens: ERC-20 Transfer logs across the same window ── */
+        return rpc("eth_getLogs", [{
+          fromBlock: toHex(hexNum(blocks[0].number)),
+          toBlock: toHex(head),
+          topics: [TRANSFER_TOPIC]
+        }]).catch(function (e) { return { __err: e.message }; });
+      })
+      .then(function (logs) {
+        if (logs && logs.__err) {
+          $("tokenIndex").innerHTML = "";
+          $("tokenState").hidden = false;
+          $("tokenRange").innerHTML = "&mdash;";
+          $("tokenState").innerHTML = "<h4>Transfer logs unavailable.</h4><p>" + esc(logs.__err) + "</p>";
+          return null;
+        }
+        var seen = {};
+        (logs || []).forEach(function (l) {
+          if (!l.topics || l.topics.length !== 3) return;   // ERC-20 shape only
+          var a = String(l.address).toLowerCase();
+          seen[a] = (seen[a] || 0) + 1;
+        });
+        /* true totals for the whole window, counted BEFORE the display cap below.
+           Metadata is only fetched for the top few contracts to keep the eth_call
+           batch small, so these two figures — not the capped subset — are what the
+           card reports as window totals. */
+        var allTokens = Object.keys(seen).length;
+        var allEvents = Object.keys(seen).reduce(function (s, a) { return s + seen[a]; }, 0);
+        /* sort by transfer count first, so the shown five are the biggest movers
+           rather than whichever appeared first in the log array */
+        var addrs = Object.keys(seen).sort(function (a, b) { return seen[b] - seen[a]; }).slice(0, 5);
+        if (!addrs.length) {
+          $("tokenIndex").innerHTML = "";
+          $("tokenState").hidden = false;
+          $("tokenRange").innerHTML = "&mdash;";
+          $("tokenState").innerHTML = "<h4>No token transfers in these blocks.</h4>" +
+            "<p>Hood Powl lists a token once it reads an ERC-20 Transfer. None appeared in the window just read.</p>";
+          return null;
+        }
+        var calls = [];
+        addrs.forEach(function (a) {
+          calls.push({ method: "eth_call", params: [{ to: a, data: "0x06fdde03" }, "latest"] });
+          calls.push({ method: "eth_call", params: [{ to: a, data: "0x95d89b41" }, "latest"] });
+          calls.push({ method: "eth_call", params: [{ to: a, data: "0x313ce567" }, "latest"] });
+        });
+        return rpcBatch(calls).then(function (r) {
+          var list = addrs.map(function (a, i) {
+            var dec = r[i * 3 + 2];
+            return {
+              address: a,
+              name: decodeAbiString(r[i * 3]),
+              symbol: decodeAbiString(r[i * 3 + 1]),
+              decimals: dec ? parseInt(dec, 16) : null,
+              transfers: seen[a]
+            };
+          }).sort(function (x, y) { return y.transfers - x.transfers; });
+          $("tokenIndex").innerHTML = list.map(tokenRow).join("");
+          $("tokenState").hidden = true;
+          /* say plainly that this list is a capped view of a larger set */
+          $("tokenRange").textContent = allTokens > list.length
+            ? "Top " + list.length + " of " + fmt(allTokens) + " tokens"
+            : fmt(allTokens) + " " + plural(allTokens, "token") + " in window";
+
+          /* an asset signal, from the same real counts */
+          var t0 = list[0];
+          SIGNALS = SIGNALS.filter(function (s) { return s.group !== "activity" || s.cat !== "Assets"; });
+          SIGNALS.push({
+            cat: "Assets", group: "activity", rank: 5,
+            title: (t0.symbol || shortAddr(t0.address)) + " is the most transferred token here",
+            body: fmt(t0.transfers) + " ERC-20 Transfer " + plural(t0.transfers, "event") +
+              " from " + (t0.name || "an unnamed contract") + " (" +
+              shortAddr(t0.address) + ") in this window, out of " + fmt(allEvents) + " across " +
+              fmt(allTokens) + " " + plural(allTokens, "token") + ".",
+            why: "Transfer events were read with eth_getLogs over the same block range, filtered to the ERC-20 " +
+              "Transfer topic and its three-topic shape. Every token in the window is counted; name, symbol " +
+              "and decimals are then read from the contracts of the " + list.length + " most active, which is " +
+              "what the list below shows. Holder counts and prices are not on-chain, so they are not shown.",
+            ev: [
+              ["Transfers", fmt(t0.transfers)],
+              ["Tokens in window", fmt(allTokens)],
+              ["Transfers in window", fmt(allEvents)],
+              ["Decimals", t0.decimals == null ? "—" : String(t0.decimals)]
+            ],
+            obs: [
+              ["Observation window", $("feedRange").textContent],
+              ["Transfer events read", fmt(allEvents)],
+              ["Distinct tokens", fmt(allTokens)],
+              ["Named in detail", "top " + list.length + " of " + fmt(allTokens)],
+              ["Top token transfers", fmt(t0.transfers)],
+              ["Name", t0.name || "not published on-chain"],
+              ["Symbol", t0.symbol || "not published on-chain"],
+              ["Decimals", t0.decimals == null ? "not published on-chain" : String(t0.decimals)]
+            ],
+            links: list.slice(0, 4).map(function (t) {
+              return { kind: (t.symbol || "Token") + " contract", value: t.address, q: t.address };
+            }),
+            primary: { kind: "Contract", value: t0.address, q: t0.address }
+          });
+          renderFeed();
+          return null;
+        });
+      })
+      .then(function () {
+        setState("live");
+        var src = RPC_URL.replace(/^https?:\/\//, "");
+        $("sourceNote").textContent = "Read-only · direct JSON-RPC reads from " + src +
+          " · " + WINDOW + "-block window · refreshed every " + (REFRESH_MS / 1000) + "s";
+        var fs = $("footSrc"); if (fs) fs.textContent = src;
+        var dr = $("docsRpc"); if (dr) dr.textContent = src;
+        loading = false;
+      })
+      .catch(function (e) {
+        loading = false;
+        var msg = e && e.message ? e.message : String(e);
+        if (/^Failed to fetch|NetworkError|Load failed/i.test(msg)) {
+          msg = msg + " — the browser blocked or could not complete the request " +
+            "(commonly CORS on a direct RPC call from a file:// page).";
+        }
+        showError(msg);
+      });
+  }
+
+  $("refreshBtn").addEventListener("click", load);
+
+  /* ══ search: real lookups against the same RPC ════════════════════════ */
+  var overlay = $("overlay"), ovInput = $("ovInput"), ovBody = $("ovBody");
+  function idle() {
+    ovBody.innerHTML = '<div class="hp-empty"><h4>Search the chain.</h4>' +
+      "<p>A transaction hash, a contract address, or a block number. Hood Powl reads it straight from " +
+      "Robinhood Chain — nothing to sign in to.</p></div>";
+  }
+  function ovMsg(title, body) {
+    ovBody.innerHTML = '<div class="hp-empty"><h4>' + esc(title) + "</h4><p>" + body + "</p></div>";
+  }
+  function facts(kind, title, list, indexQ) {
+    var html = '<div class="hp-res"><span class="k">' + esc(kind) + '</span><span>' +
+      '<span class="t hp-mono">' + esc(title) + "</span></span></div>";
+    list.forEach(function (f) {
+      html += '<div class="hp-res"><span class="k">' + esc(f[0]) + '</span><span>' +
+        '<span class="t hp-mono">' + esc(f[1]) + "</span></span></div>";
+    });
+    /* the node's answer is above; indexed context is added below it, never
+       in place of it */
+    html += '<div id="ovIndexed"></div>';
+    ovBody.innerHTML = html;
+    if (indexQ) enrichOverlay(indexQ);
+  }
+
+  function enrichOverlay(q) {
+    var slot = $("ovIndexed");
+    if (!slot) return;
+    slot.innerHTML = '<div class="hp-res"><span class="k">Indexed</span><span>' +
+      '<span class="t hp-mono hp-dim-t">reading the indexer…</span></span></div>';
+    /* the heavier transfers sample is only worth fetching for an actual token */
+    var token = /^0x[0-9a-fA-F]{40}$/.test(q)
+      ? fetchBlockscout("/addresses/" + q).then(function (a) {
+          return (a && a.token) ? getTokenTransfers(q) : null;
+        })
+      : Promise.resolve(null);
+    Promise.all([getIndexedEvidence(q), token]).then(function (r) {
+      if (slot !== $("ovIndexed")) return;              // a newer search replaced it
+      var rows = (r[0] || []).concat(r[1] || []);
+      if (!rows.length) {
+        slot.innerHTML = '<div class="hp-res"><span class="k">Indexed</span><span>' +
+          '<span class="t hp-mono hp-dim-t">no indexed record returned</span></span></div>';
+        return;
+      }
+      slot.innerHTML = '<div class="hp-res hp-res-sub"><span class="k">Indexed context</span>' +
+        '<span><span class="t hp-bs-src">Blockscout</span></span></div>' +
+        rows.map(function (f) {
+          return '<div class="hp-res"><span class="k">' + esc(f[0]) + '</span><span>' +
+            '<span class="t hp-mono">' + esc(f[1]) + "</span></span></div>";
+        }).join("");
+    });
+  }
+  var searchTimer = null;
+  function doSearch(q) {
+    q = String(q == null ? "" : q).trim();
+    if (!q) return idle();
+    ovMsg("Reading the chain.", "Looking up " + esc(q) + ".");
+    if (/^0x[0-9a-fA-F]{64}$/.test(q)) {
+      Promise.all([rpc("eth_getTransactionByHash", [q]), rpc("eth_getTransactionReceipt", [q])])
+        .then(function (r) {
+          var tx = r[0], rc = r[1];
+          if (!tx) return ovMsg("Not found on Robinhood Chain.", "No transaction with this hash is known to the node.");
+          facts("Transaction", shortHash(tx.hash), [
+            ["Block", fmt(hexNum(tx.blockNumber))],
+            ["From", shortAddr(tx.from)],
+            [tx.to == null ? "Created" : "To", tx.to == null ? shortAddr(rc && rc.contractAddress) : shortAddr(tx.to)],
+            ["Value", (weiToEth(tx.value) || "—")],
+            ["Gas", fmt(hexNum(tx.gas))],
+            ["Status", rc ? (hexNum(rc.status) === 1 ? "success" : "failed") : "receipt unavailable"]
+          ], tx.hash);
+        }).catch(function (e) { ovMsg("Unavailable.", esc(e.message)); });
+    } else if (/^0x[0-9a-fA-F]{40}$/.test(q)) {
+      rpc("eth_getCode", [q, "latest"]).then(function (code) {
+        if (!code || code === "0x") return facts("Address", shortAddr(q), [["Type", "Account (no contract code)"], ["Address", q]], q);
+        return rpcBatch([
+          { method: "eth_call", params: [{ to: q, data: "0x06fdde03" }, "latest"] },
+          { method: "eth_call", params: [{ to: q, data: "0x95d89b41" }, "latest"] },
+          { method: "eth_call", params: [{ to: q, data: "0x313ce567" }, "latest"] }
+        ]).then(function (r) {
+          var dec = r[2] ? parseInt(r[2], 16) : null;
+          var sym = decodeAbiString(r[1]);
+          facts(dec != null && sym ? "Token" : "Contract", shortAddr(q), [
+            ["Name", decodeAbiString(r[0]) || "—"],
+            ["Symbol", sym || "—"],
+            ["Decimals", dec == null ? "—" : String(dec)],
+            ["Code size", Math.max(0, (code.length - 2) / 2) + " bytes"],
+            ["Address", q]
+          ], q);
+        });
+      }).catch(function (e) { ovMsg("Unavailable.", esc(e.message)); });
+    } else if (/^[0-9]+$/.test(q)) {
+      rpc("eth_getBlockByNumber", [toHex(Number(q)), false]).then(function (b) {
+        if (!b) return ovMsg("Not found on Robinhood Chain.", "The node has no block at that height yet.");
+        facts("Block", fmt(hexNum(b.number)), [
+          ["Transactions", String((b.transactions || []).length)],
+          ["Sealed", utc(hexNum(b.timestamp)) + " UTC"],
+          ["Gas used", fmt(hexNum(b.gasUsed))],
+          ["Hash", shortHash(b.hash)]
+        ]);
+      }).catch(function (e) { ovMsg("Unavailable.", esc(e.message)); });
+    } else {
+      ovMsg("Not something Hood Powl can look up.",
+        "It needs a transaction hash, an address, or a block number.");
+    }
+  }
+  function openSearch(prefill) {
+    closeSheet(); closeMenu();
+    overlay.hidden = false;
+    document.body.style.overflow = "hidden";
+    if (prefill) { ovInput.value = prefill; doSearch(prefill); }
+    setTimeout(function () { ovInput.focus(); }, 30);
+  }
+  function closeSearch() { overlay.hidden = true; document.body.style.overflow = ""; ovInput.value = ""; idle(); }
+  $("searchBtn").addEventListener("click", function () { openSearch(); });
+  $("searchBtnMob").addEventListener("click", function () { openSearch(); });
+  $("sheetSearch").addEventListener("click", function () { openSearch(); });
+  $("ovClose").addEventListener("click", closeSearch);
+  overlay.addEventListener("click", function (e) { if (e.target === overlay) closeSearch(); });
+  ovInput.addEventListener("input", function (e) {
+    var v = e.target.value;
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(function () { doSearch(v); }, 350);
+  });
+  idle();
+
+  /* the inline Discover field hands off to the same lookup */
+  $("findInput").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      var v = e.target.value.trim();
+      if (v) { openSearch(v); e.target.value = ""; }
+    }
+  });
+
+  /* ══ chrome: menu, sheet, router, clock, mark, reveal ═════════════════ */
+  var sheet = $("sheet"), dotsMenu = $("dotsMenu"), dotsBtn = $("dotsBtn");
+  function closeSheet() { sheet.hidden = true; document.body.style.overflow = ""; }
+  function closeMenu() { dotsMenu.hidden = true; dotsBtn.setAttribute("aria-expanded", "false"); dotsBtn.classList.remove("on"); }
+  $("menuBtn").addEventListener("click", function () { sheet.hidden = false; document.body.style.overflow = "hidden"; });
+  $("sheetClose").addEventListener("click", closeSheet);
+  [].forEach.call(document.querySelectorAll("[data-sheet]"), function (a) { a.addEventListener("click", closeSheet); });
+  dotsBtn.addEventListener("click", function (e) {
+    e.stopPropagation();
+    var open = dotsMenu.hidden;
+    dotsMenu.hidden = !open;
+    dotsBtn.setAttribute("aria-expanded", open ? "true" : "false");
+    dotsBtn.classList.toggle("on", open);
+  });
+  document.addEventListener("click", function (e) {
+    if (!dotsMenu.hidden && !dotsMenu.contains(e.target) && e.target !== dotsBtn) closeMenu();
+  });
+  [].forEach.call(dotsMenu.querySelectorAll("a"), function (a) { a.addEventListener("click", closeMenu); });
+  window.addEventListener("keydown", function (e) {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") { e.preventDefault(); openSearch(); }
+    if (e.key === "Escape") {
+      if (!overlay.hidden) closeSearch();
+      else if (!sheet.hidden) closeSheet();
+      else if (!dotsMenu.hidden) closeMenu();
+    }
+  });
+
+  /* ── FAQ accordion: one row open at a time, by delegation ── */
+  (function faqAccordion() {
+    var page = $("viewFaq"); if (!page) return;
+    page.addEventListener("click", function (e) {
+      var btn = e.target.closest ? e.target.closest(".hp-faq-q") : null;
+      if (!btn) return;
+      var item = btn.parentNode;
+      var open = btn.getAttribute("aria-expanded") === "true";
+      /* close whatever else is open first, so the page never grows unread */
+      [].forEach.call(page.querySelectorAll('.hp-faq[data-open="true"]'), function (o) {
+        if (o === item) return;
+        o.removeAttribute("data-open");
+        o.querySelector(".hp-faq-q").setAttribute("aria-expanded", "false");
+      });
+      btn.setAttribute("aria-expanded", open ? "false" : "true");
+      if (open) { item.removeAttribute("data-open"); } else { item.setAttribute("data-open", "true"); }
+    });
+  })();
+
+  /* ── router: discover / docs / blog / faq, with the original section
+        anchors preserved so existing links keep working ── */
+  var VIEWS = { home: "viewHome", discover: "viewDiscover", record: "viewRecord",
+                docs: "viewDocs", blog: "viewBlog", faq: "viewFaq" };
+  var ALIAS = {                        // legacy hashes -> the section they mean now
+    overview: "overview", radar: "discover-feed", tokens: "assets",
+    projects: "registry", activity: "record", "discover-feed": "discover-feed",
+    assets: "assets", record: "record", registry: "registry", method: "method"
+  };
+  var SECTION_VIEW = {                 // and which view that section now lives in
+    overview: "home", method: "home", "discover-feed": "discover",
+    assets: "discover", record: "record", registry: "discover"
+  };
+  function route(scroll) {
+    var raw = (location.hash || "").replace(/^#\/?/, "");
+    var target = ALIAS[raw];
+    var view = VIEWS[raw] ? raw : (target ? SECTION_VIEW[target] : "home");
+    Object.keys(VIEWS).forEach(function (k) {
+      var el = $(VIEWS[k]);
+      if (!el) return;
+      var on = k === view;
+      el.hidden = !on;
+      if (on) { el.classList.remove("hp-view"); void el.offsetWidth; el.classList.add("hp-view"); }
+    });
+    [].forEach.call(document.querySelectorAll("[data-nav]"), function (a) {
+      a.className = "hp-link" + (a.getAttribute("data-nav") === view ? " on" : "");
+    });
+    [].forEach.call(document.querySelectorAll("[data-sheet]"), function (a) {
+      a.className = "hp-sheet-i" + (a.getAttribute("data-sheet") === view ? " on" : "");
+    });
+    /* the ⋮ menu shows which of its pages you are on when opened */
+    [].forEach.call(document.querySelectorAll("[data-menu]"), function (a) {
+      var on = a.getAttribute("data-menu") === view;
+      a.classList.toggle("on", on);
+      if (on) { a.setAttribute("aria-current", "page"); } else { a.removeAttribute("aria-current"); }
+    });
+    /* a section hash scrolls to that section once its view is showing;
+       a bare view hash goes to the top of the page */
+    if (scroll !== false && target && $(target) && !VIEWS[raw]) {
+      $(target).scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      window.scrollTo({ top: 0, behavior: scroll === false ? "auto" : "smooth" });
+    }
+    revealAll();
+  }
+  window.addEventListener("hashchange", function () { route(true); });
+
+  function tick() {
+    var t = new Date().toISOString().slice(11, 19);
+    $("clock").textContent = t + " UTC";
+    $("nowClock").textContent = t;
+  }
+  tick(); setInterval(tick, 1000);
+
+  /* the existing mark: six bars, one lit, moving slowly */
+  var heights = [6, 10, 14, 18, 14, 10];
+  var bearings = ["bearing", "bearing2", "bearing3"].map(function (id) {
+    var el = $(id); if (!el) return null;
+    heights.forEach(function (h) { var i = document.createElement("i"); i.style.height = h + "px"; el.appendChild(i); });
+    return el;
+  }).filter(Boolean);
+  var bi = 0;
+  setInterval(function () {
+    bi = (bi + 1) % heights.length;
+    bearings.forEach(function (el) {
+      [].forEach.call(el.children, function (c, k) { c.className = k === bi ? "on" : ""; });
+    });
+  }, 1600);
+
+  /* reveal on scroll, per visible view */
+  var io = null;
+  if ("IntersectionObserver" in window) {
+    io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+    }, { threshold: 0.05, rootMargin: "0px 0px -40px 0px" });
+  }
+  function revealAll() {
+    var revs = document.querySelectorAll(".hp-rev:not(.in)");
+    if (!io) { [].forEach.call(revs, function (r) { r.classList.add("in"); }); return; }
+    [].forEach.call(revs, function (r, i) {
+      r.style.transitionDelay = Math.min(i * 45, 260) + "ms";
+      io.observe(r);
+    });
+    /* safety net: an element the observer never reports on must not stay
+       invisible. Anything inside the viewport after 2.5s is revealed outright. */
+    clearTimeout(revealFallback);
+    revealFallback = setTimeout(function () {
+      [].forEach.call(document.querySelectorAll(".hp-rev:not(.in)"), function (r) {
+        var b = r.getBoundingClientRect();
+        if (b.top < window.innerHeight && b.bottom > 0) r.classList.add("in");
+      });
+    }, 2500);
+  }
+  var revealFallback = null;
+
+  /* docs figures describe the real configuration above */
+  (function docsFacts() {
+    var w = $("docsWindow"); if (w) w.textContent = WINDOW + " blocks";
+    var rf = $("docsRefresh"); if (rf) rf.textContent = (REFRESH_MS / 1000) + " seconds";
+    var sp = $("docsSpan"); if (sp) sp.textContent = CADENCE_SPAN + " headers";
+    var dr = $("docsRpc"); if (dr) dr.textContent = RPC_URL.replace(/^https?:\/\//, "");
+    var fs = $("footSrc"); if (fs) fs.textContent = RPC_URL.replace(/^https?:\/\//, "");
+    var db = $("docsBs"); if (db) db.textContent = BS_URL.replace(/^https?:\/\//, "");
+  })();
+
+  /* ══ go ═══════════════════════════════════════════════════════════════ */
+  route(false);
+  load();
+  setInterval(function () { if (!document.hidden) load(); }, REFRESH_MS);
+})();
+</script>
+</body>
+</html>
