@@ -6,6 +6,9 @@ Hood Powl reads Robinhood Chain directly over JSON-RPC and turns what it finds i
 checkable signals — what changed, why it matters, and the exact counts the claim was derived from.
 No wallet, no account, no index of its own, and no number on the page that a node did not answer.
 
+**[Open the live page →](https://trevioos.github.io/hoodpowl/)** — it reads the chain the moment
+it loads, so the numbers you see are the ones a node answered just then.
+
 ![Hood Powl](docs/home.png)
 
 <p>
