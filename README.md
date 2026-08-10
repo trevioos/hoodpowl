@@ -88,7 +88,7 @@ same node.
 No build step, no install:
 
 ```bash
-git clone https://github.com/jamesputra6897281-arch/hoodpowl.git
+git clone https://github.com/trevioos/hoodpowl.git
 cd hoodpowl
 python -m http.server 8000     # then open http://localhost:8000
 ```
